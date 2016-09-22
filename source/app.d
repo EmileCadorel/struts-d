@@ -6,7 +6,7 @@ import http.HttpResponse;
 import utils.LexerString;
 import control.Session;
 import control.Controller;
-// import control.NotFoundController;
+import control.NotFoundController;
 
 import HomeController;
 
@@ -31,10 +31,10 @@ class HSession : HttpSession {
     int status_recv;
     while ((status_recv = this.recv_request (data)) > 0) {
       HttpRequest request = this.toRequest (data);
-      Controller controller = session.get!HomeController ("home");
+      Controller controller = session.get!HomeController ("test");
       HttpResponse response = null;
-      // if (controller is null)
-      // 	controller = new NotFoundController;
+      if (controller is null)
+      	controller = new NotFoundController;
       controller.unpackRequest (request);
       response = this.build_response (controller.execute());
       this.send_response (response);
