@@ -6,7 +6,7 @@ abstract class HttpSession : Thread {
 
     this (Socket socket) {
 	super (&run);
-	this.socket = socket;	
+	this.socket = socket;
     }
 
     void on_begin (Address addr) {}
@@ -17,20 +17,20 @@ abstract class HttpSession : Thread {
     }
 
     ~this () {}
-    
+
     private {
-	
+
 	void run () {
 	    on_begin (this.socket.remoteAddress ());
 	    on_end ();
 	    this.socket.shutdown (SocketShutdown.BOTH);
 	    this.socket.close ();
 	}
-	
+
     }
-    
+
     public {
 	Socket socket;
     }
-    
+
 }

@@ -13,19 +13,19 @@ struct Word {
     bool isKey = false;
     int line = 0;
     int column = 0;
-    
+
     void reset() {
 	str = "";
 	isKey = false;
     }
-    
+
     string toString () {
 	return str ~ "(" ~ to!string (line) ~ ":" ~ to!string(column) ~ ")";
     }
 }
 
 class LexerFile {
-    
+
     this(string fileName) {
 	try {
 	    this.filename = fileName;
@@ -37,13 +37,13 @@ class LexerFile {
 	} catch (Throwable o) {
 	    throw new NoSuchFile (filename);
 	}
-    }    
+    }
 
     string getFileName () {
 	return this.filename;
     }
-    
-    
+
+
     void setKeys (Array!string keys) {
 	foreach (string it ; keys) {
 	    this.keys.insertBack(it);
@@ -66,23 +66,23 @@ class LexerFile {
 	    do {
 		word.reset();
 		if(!getWord (word)) { word.str = ""; break; }
-		
+
 		string come = null;
 		if((come = isComment(word)) !is null && commentsOn) {
 		    do {
-			word.reset();			
+			word.reset();
 			if(!getWord (word)) { word.str = ""; break; }
 		    } while (word.str != come && word.str != "");
 		    if(!getWord (word)) { word.str = ""; break; }
 		}
 	    } while (isSkip(word) && word.str != "");
-	    
+
 	    if(word.str != "") {
 		currentWord++;
 		read.insertBack (word);
 		ret = word;
 		return true;
-	    } else {		
+	    } else {
 		currentWord++;
 		return false;
 	    }
@@ -105,8 +105,8 @@ class LexerFile {
 		skip.insertBack (elem);
 	}
     }
-    
-    
+
+
     void rewind(int nb = 1) {
 	currentWord -= nb;
     }
@@ -123,7 +123,7 @@ class LexerFile {
     bool getWord (ref Word word) {
 	ulong where = file.tell();
 	string line = file.readln();
-	if(file.eof() || line is null) return false;       
+	if(file.eof() || line is null) return false;
 	int max = 0, beg = to!int(line.length);
 	foreach (string it ; keys) {
 	    long id = indexOf(line, it);
@@ -173,7 +173,7 @@ class LexerFile {
 
     void addSkip (string name) {
 	skip.insertBack(name);
-    }        
+    }
 
     string toString () {
 	OutBuffer buf = new OutBuffer;
@@ -189,11 +189,11 @@ class LexerFile {
 	buf.write("^\n");
 	return buf.toString;
     }
-    
+
     ~this() {
 	file.close();
     }
-    
+
     //private:
 
     string filename;

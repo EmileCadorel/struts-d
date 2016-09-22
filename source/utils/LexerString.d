@@ -10,7 +10,7 @@ import std.file;
 struct Word {
     string str = "";
     bool isKey = false;
-    
+
     void reset() {
 	str = "";
 	isKey = false;
@@ -19,20 +19,20 @@ struct Word {
     string toString () {
 	int [] total;
 	foreach (it ; this.str)
-	    total ~= [to!int (it)];	
+	    total ~= [to!int (it)];
 	return "[" ~ to!string (total) ~ "]";
     }
-    
+
 }
 
 class LexerString {
-    
+
     this(string data) {
 	this.file = data;
 	this.currentChar = 0;
 	this.currentWord = -1;
-    }    
-        
+    }
+
     void setKeys (Array!string keys) {
 	foreach (string it ; keys) {
 	    this.keys.insertBack(it);
@@ -55,23 +55,23 @@ class LexerString {
 	    do {
 		word.reset();
 		if(!getWord (word)) { word.str = ""; break; }
-		
+
 		string come = null;
 		if((come = isComment(word)) !is null && commentsOn) {
 		    do {
-			word.reset();			
+			word.reset();
 			if(!getWord (word)) { word.str = ""; break; }
 		    } while (word.str != come && word.str != "");
 		    if(!getWord (word)) { word.str = ""; break; }
 		}
 	    } while (isSkip(word) && word.str != "");
-	    
+
 	    if(word.str != "") {
 		currentWord++;
 		read.insertBack (word);
 		ret = word;
 		return true;
-	    } else {		
+	    } else {
 		currentWord++;
 		return false;
 	    }
@@ -94,8 +94,8 @@ class LexerString {
 		skip.insertBack (elem);
 	}
     }
-    
-    
+
+
     void rewind(int nb = 1) {
 	currentWord -= nb;
     }
@@ -114,7 +114,7 @@ class LexerString {
 		    max = to!int(it.length);
 	    }
 	}
-	
+
 	if(beg == to!int(line.length) + 1) {
 	    word.str = line;
 	    currentChar = file.length;
@@ -145,7 +145,7 @@ class LexerString {
 
     void addSkip (string name) {
 	skip.insertBack(name);
-    }        
+    }
 
     string toString () {
 	OutBuffer buf = new OutBuffer;
@@ -161,10 +161,10 @@ class LexerString {
 	buf.write("^\n");
 	return buf.toString;
     }
-    
+
     ~this() {
     }
-    
+
     //private:
 
     string filename;

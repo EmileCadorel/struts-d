@@ -14,9 +14,9 @@ class HttpServer (T : HttpSession) {
 	foreach (it ; this.sessions) {
 	    it.kill ();
 	}
-	this.end = true;	
+	this.end = true;
     }
-    
+
     private {
 	void init () {
 	    this.socket = new TcpSocket ();
@@ -34,16 +34,16 @@ class HttpServer (T : HttpSession) {
 		this.sessions.insertFront (session);
 		session.start ();
 	    }
-	}	
-	
+	}
+
     }
-    
-    private {   
+
+    private {
 	ushort nb_stack = 1;
 	ushort port = 8080;
 	Socket socket;
 	SList!T sessions;
 	bool end = false;
     }
-    
+
 };

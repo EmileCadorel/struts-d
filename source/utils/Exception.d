@@ -8,9 +8,9 @@ class StrutsException : Exception {
     string PURPLE = "\u001B[46m";
     string RED = "\u001B[41m";
     string GREEN = "\u001B[42m";
-    
+
     this (string msg) {
 	super (msg);
     }
-    
+
 }
