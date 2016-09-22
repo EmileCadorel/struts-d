@@ -1,31 +1,8 @@
-// import std.stdio;
-// import control.Session;
-
-// class A {
-//   string toString () {
-//     return "A";
-//   }
-// }
-
-// void fill_session (Session session) {
-//   session["salut"] = new A ();
-//   session ["comment"] = new int(89);
-// }
-
-// void main (string [] args) {
-//   Session session = new Session;
-//   fill_session (session);
-//   auto res = session.get!A ("salut");
-//   if (res !is null)
-//     writeln (res.toString);
-
-//   auto b = session.get!int ("comment");
-//   if (b !is null)
-//     writeln (*b);
-// }
-
 import std.stdio, std.socket, std.container;
-import http.HttpSession, http.HttpServer, http.HttpRequest, http.HttpResponse;
+import http.HttpSession;
+import http.HttpServer;
+import http.HttpRequest;
+import http.HttpResponse;
 import utils.LexerString;
 
 class Session : HttpSession {
@@ -37,10 +14,11 @@ class Session : HttpSession {
     writeln ("Nouvelle connexion : ");
     writeln (addr.toAddrString());
 
-    // while (true) {
-      string data = this.recv_request ();
+    string data = "";
+    int status_recv;
+    while ((status_recv = this.recv_request (data)) > 0) {
       HttpRequest request = this.toRequest (data);
-      writeln (request.toString());
+      // writeln (request.toString());
       HttpResponse response = new HttpResponse;
       response.code = HttpResponseCode.NOT_FOUND;
       response.proto = "HTTP/1.1";
@@ -48,7 +26,10 @@ class Session : HttpSession {
       string content = "404 Not Found";
       response.content = cast(byte[])content;
       this.send_response (response);
-    // }
+    }
+
+    if (status_recv == Socket.ERROR)
+      writeln (this.socket.getErrorText());
   }
 
   void on_end () {
@@ -62,14 +43,19 @@ class Session : HttpSession {
     return HttpRequestParser.parser (lex);
   }
 
-  string recv_request () {
+  int recv_request (string data) {
     byte[] total;
     while (true) {
-      byte[] data;
-      data.length = 256;
-      auto length = this.socket.receive (data);
-      total ~= data;
-      if (length < 256) return cast(string)total;
+      byte[] buffer;
+      buffer.length = 256;
+      auto length = this.socket.receive (buffer);
+      total ~= buffer;
+      if (length <= 0) {
+	return cast(int)length;
+      } else if (length < 256) {
+	data = cast(string)total;
+	return 1;
+      }
     }
   }
 
@@ -78,9 +64,6 @@ class Session : HttpSession {
     if (error == Socket.ERROR) {
       writeln ("Error !");
       writeln (this.socket.getErrorText());
-    } else {
-      writeln ("No error while sending : ");
-      writeln (cast(string)response.enpack());
     }
   }
 }
