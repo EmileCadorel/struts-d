@@ -4,8 +4,17 @@ import http.HttpServer;
 import http.HttpRequest;
 import http.HttpResponse;
 import utils.LexerString;
+import control.Session;
+import control.Controller;
+// import control.NotFoundController;
 
-class Session : HttpSession {
+import HomeController;
+
+void fill_session (Session s) {
+  s["home"] = new HomeController;
+}
+
+class HSession : HttpSession {
   this (Socket socket) {
     super (socket);
   }
@@ -14,17 +23,20 @@ class Session : HttpSession {
     writeln ("Nouvelle connexion : ");
     writeln (addr.toAddrString());
 
+    // on récupère la liste des controleurs
+    Session session = new Session;
+    fill_session (session); // tmp, on va appeler un fichier xml par la suite...
+
     string data = "";
     int status_recv;
     while ((status_recv = this.recv_request (data)) > 0) {
       HttpRequest request = this.toRequest (data);
-      // writeln (request.toString());
-      HttpResponse response = new HttpResponse;
-      response.code = HttpResponseCode.NOT_FOUND;
-      response.proto = "HTTP/1.1";
-      response.type = "text/html";
-      string content = "404 Not Found";
-      response.content = cast(byte[])content;
+      Controller controller = session.get!HomeController ("home");
+      HttpResponse response = null;
+      // if (controller is null)
+      // 	controller = new NotFoundController;
+      controller.unpackRequest (request);
+      response = this.build_response (controller.execute());
       this.send_response (response);
     }
 
@@ -34,6 +46,15 @@ class Session : HttpSession {
 
   void on_end () {
     writeln ("Deconnexion !");
+  }
+
+  HttpResponse build_response (string content) {
+    HttpResponse response = new HttpResponse;
+    response.code = HttpResponseCode.OK;
+    response.proto = "HTTP/1.1";
+    response.type = "text/html";
+    response.content = cast(byte[])content;
+    return response;
   }
 
   HttpRequest toRequest (string data) {
@@ -71,5 +92,5 @@ class Session : HttpSession {
 void main (string[] args) {
   writeln (" ## Prototype de serveur ## ");
 
-  HttpServer!Session serv = new HttpServer!Session ([]);
+  HttpServer!HSession serv = new HttpServer!HSession ([]);
 }

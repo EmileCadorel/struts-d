@@ -1,0 +1,1 @@
+// va renvoyer la page classique de 404 Not Found, on pourra aller chercher un fichier par défaut que le dev pourra modifier
