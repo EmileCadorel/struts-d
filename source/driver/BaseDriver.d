@@ -6,6 +6,7 @@ import http.HttpServer;
 import http.HttpRequest;
 import http.HttpResponse;
 import utils.LexerString;
+import utils.Log;
 import control.Controller;
 import control.NotFoundController;
 import control.ControllerContainer;
@@ -17,9 +18,11 @@ class BaseDriver : HttpSession {
   this (Socket socket) {
     super (socket);
     container = new ControllerContainer;
+    log = Log.instance;
   }
 
   void on_begin (Address addr) {
+    log.add_info ("Nouvelle connexion -> " ~ addr.toAddrString());
     writeln ("Nouvelle connexion : ");
     writeln (addr.toAddrString());
 
@@ -29,6 +32,7 @@ class BaseDriver : HttpSession {
   }
 
   void on_end () {
+    log.add_info ("Deconnexion !");
     writeln ("Deconnexion !");
   }
 
@@ -119,5 +123,6 @@ class BaseDriver : HttpSession {
   private {
     ControllerContainer container;
     string sessid;
+    Log log;
   }
 }
