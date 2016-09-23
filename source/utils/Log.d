@@ -11,9 +11,9 @@ class Log {
   this () {
     this.option = Option.instance;
     if (this.option.log_file_path != "") {
-      this.file = File(this.option.log_file_path, "a+");
+      this.file = File(this.option.log_file_path, "a");
     } else {
-      this.file = File(this.default_file_name, "a+");
+      this.file = File(this.default_file_name, "a");
     }
   }
 
@@ -26,7 +26,8 @@ class Log {
     string line = "(" ~ to!string(date.day) ~ "-" ~ to!string(date.month) ~ "-" ~ to!string(date.year) ~ " : INFO : ";
     line ~= text;
     writeln ("line : " ~ line);
-    this.file.rawWrite (line);
+    this.file.writeln (line);
+    this.file.flush();
   }
 
   void add_err (string text) {
@@ -34,6 +35,7 @@ class Log {
     string line = "(" ~ to!string(date.day) ~ "-" ~ to!string(date.month) ~ "-" ~ to!string(date.year) ~ " : ERROR : ";
     line ~= text;
     this.file.writeln (line);
+    this.file.flush();
   }
 
   void add_war (string text) {
@@ -41,6 +43,7 @@ class Log {
     string line = "(" ~ to!string(date.day) ~ "-" ~ to!string(date.month) ~ "-" ~ to!string(date.year) ~ " : WARNING : ";
     line ~= text;
     this.file.writeln (line);
+    this.file.flush();
   }
 
   ref string file_path () {
