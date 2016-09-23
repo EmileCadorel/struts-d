@@ -1,6 +1,8 @@
 module http.HttpRequest;
 import std.traits, std.outbuffer, std.conv, std.stdio;
 import utils.LexerString;
+import http.HttpUrl;
+import std.container;
 
 enum HttpMethod : string {
     OPTIONS = "OPTIONS",
@@ -26,7 +28,7 @@ class HttpRequest {
 	return this.type;
     }
 
-    ref string url () {
+    ref HttpUrl url () {
 	return this._url;
     }
 
@@ -65,7 +67,7 @@ class HttpRequest {
     string toString () {
 	OutBuffer buf = new OutBuffer;
 	buf.write ("METHODE : " ~ to!string (type) ~ "\n");
-	buf.write ("URL : " ~ _url ~ "\n");
+	buf.write ("URL : " ~ _url.toString () ~ "\n");
 	buf.write ("PROTOCOL : " ~ _proto ~ "\n");
 	buf.write ("HOST : " ~ _host_addr ~ " : " ~ _host_port ~ "\n");
 	buf.write ("USER_AGENT : " ~ _user_agent ~ "\n");
@@ -78,7 +80,7 @@ class HttpRequest {
     
     private {	
 	HttpMethod type;	
-	string _url;
+	HttpUrl _url;
 	string _proto;
 	string _host_addr;
 	string _host_port;
@@ -91,9 +93,29 @@ class HttpRequest {
     
 }
 
-class HttpRequestParser {
+enum HttpRequestTokens : string {
+    SEMI_COLON = ":",
+	COMA = ",",
+	SLASH = "/",
+	QUES_MARK = "?",
+	SHARP = "#",
+	EQUAL = "=",
+	AND = "&"
+}
 
-    static HttpRequest parser (LexerString lexer) {
+class ReqSyntaxError : Exception {
+    this (Word word) {
+	super ("Erreur de syntaxe " ~ word.str);
+    }   
+}
+
+
+class HttpRequestParser {    
+    
+    static HttpRequest parser (string data) {
+	LexerString lexer = new LexerString (data);
+	lexer.setKeys (make!(Array!string)(EnumMembers!HttpRequestTokens, " ", "\n", "\r"));
+	lexer.setKeys (make!(Array!string)(" ", "\r", "\n"));
 	Word begin;
 	HttpRequest ret = new HttpRequest;
 	while (true) {
@@ -120,13 +142,113 @@ class HttpRequestParser {
         
     static void parse_method (LexerString lexer, ref HttpRequest req, Word elem) {
 	req.http_method = cast(HttpMethod)elem.str;
-	Word url, proto;
-	lexer.getNext (url);
+	Word proto;
+	auto url = parse_url (lexer);
 	lexer.getNext (proto);
-	req.url = url.str;
+	req.url = url;
 	req.proto = proto.str;
     }
 
+    static HttpUrl parse_url (LexerString file) {
+	Word word;
+	file.setSkip (make!(Array!string)());
+	file.getNext (word);
+	if (word.str != HttpRequestTokens.SLASH)
+	    throw new ReqSyntaxError (word);
+	Array!string path;
+	while (true) {	    
+	    if (!file.getNext (word)) throw new ReqSyntaxError (word);
+	    if (word.str == " ") break;
+	    else if (word.str == HttpRequestTokens.QUES_MARK) break;
+	    else if (word.str == HttpRequestTokens.SHARP) break;
+	    else {
+		path.insertBack (word.str);
+	    }
+
+	    if (!file.getNext (word)) throw new ReqSyntaxError (word);
+	    if (word.str == HttpRequestTokens.QUES_MARK) break;
+	    else if (word.str == HttpRequestTokens.SHARP) break;
+	    else if (word.str == " ") break;
+	    else if (word.str != HttpRequestTokens.SLASH)
+		throw new ReqSyntaxError (word);	    
+	}
+	
+	if (word.str == HttpRequestTokens.SHARP) {
+	    string anchor = parse_anchor (file);
+	    file.setSkip (make!(Array!string)(" ", "\n", "\r"));
+	    return new HttpUrl (path, anchor);
+	} else if (word.str == HttpRequestTokens.QUES_MARK) {
+	    return parse_url_values(file, path);
+	} else {
+	    file.setSkip (make!(Array!string)(" ", "\n", "\r"));
+	    return new HttpUrl (path);
+	}	    
+    }
+
+    static HttpUrl parse_url_values (LexerString file, Array!string path) {
+	Word word;
+	HttpUrl.Parameter [string] params;
+	while (true) {
+	    if (!file.getNext (word)) throw new ReqSyntaxError (word);
+	    string key = word.str;
+	    if (!file.getNext (word) || word.str != HttpRequestTokens.EQUAL)
+		throw new ReqSyntaxError (word);
+	    params[key] = parse_value (file);
+	    if(!file.getNext (word))
+		throw new ReqSyntaxError (word);
+	    if (word.str == HttpRequestTokens.SHARP) {
+		string anchor = parse_anchor (file);
+		return new HttpUrl (path, params, anchor);
+	    } else if (word.str == " ")
+		return new HttpUrl (path, params);
+	    else if (word.str != HttpRequestTokens.AND)
+		throw new ReqSyntaxError (word);
+	}	
+    }
+
+    static HttpUrl.Parameter parse_value (LexerString file) {
+	Word word;
+	file.getNext (word);
+	if (word.str.length > 0 && word.str[0] >= '0'
+	    && word.str[0] <= '9') 
+	    return numeric (file, word);	
+	else {
+	    return HttpUrl.Parameter (HttpUrl.ParamEnum.STRING, &word.str);
+	}
+    }
+
+
+    static HttpUrl.Parameter numeric (LexerString file, Word word) {
+	bool dot = false;
+	foreach (it ; word.str) {
+	    if (it == '.') {		
+		if (dot) {
+		    return HttpUrl.Parameter (HttpUrl.ParamEnum.STRING, &word.str);
+		} else dot = true;
+	    } else if (it < '0' || it > '9') {
+		return HttpUrl.Parameter (HttpUrl.ParamEnum.STRING, &word.str);
+	    }
+	}
+	
+	if (dot) {
+	    return HttpUrl.Parameter (HttpUrl.ParamEnum.FLOAT, new float (to!float (word.str)));
+	} else {
+	    return HttpUrl.Parameter (HttpUrl.ParamEnum.INT, new int (to!int (word.str)));
+	}	
+    }
+    
+    static string parse_anchor (LexerString lexer) {
+	Word word;
+	string anchor;
+	while (true) {
+	    if (!lexer.getNext (word)) throw new ReqSyntaxError (word);
+	    if (word.str == " ") break;
+	    else anchor ~= word.str;
+	}
+	return anchor;
+    }
+    
+    
     static void parse_host (LexerString lexer, ref HttpRequest req) {
 	Word addr, port, ign;
 	lexer.getNext (ign);

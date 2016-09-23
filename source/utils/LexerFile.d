@@ -107,7 +107,6 @@ class LexerFile {
 	}
     }
 
-
     void rewind(int nb = 1) {
 	currentWord -= nb;
     }
