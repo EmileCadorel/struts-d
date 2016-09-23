@@ -32,6 +32,14 @@ class HttpResponse {
     return this._type;
   }
 
+  ref string[string] cookies () {
+    return this._cookies;
+  }
+
+  void addContent (string content) {
+    this._content = cast(byte[])content;
+  }
+
   byte [] enpack () {
     OutBuffer buf = new OutBuffer;
     buf.write (_proto);
@@ -53,6 +61,7 @@ class HttpResponse {
     SysTime _date;
     byte [] _content;
     string _type;
+    string[string] _cookies;
   }
 
 }

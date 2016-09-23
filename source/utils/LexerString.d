@@ -40,9 +40,7 @@ class LexerString {
     }
 
     void setSkip(Array!string skip) {
-	foreach(string it ; skip) {
-	    this.skip.insertBack(it);
-	}
+	this.skip = skip;
     }
 
     void addComment (string beg, string stop) {

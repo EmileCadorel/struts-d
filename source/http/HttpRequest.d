@@ -6,14 +6,14 @@ import std.container;
 
 enum HttpMethod : string {
     OPTIONS = "OPTIONS",
-    GET = "GET",
-    HEAD = "HEAD",
-    POST = "POST",
-    PUT = "PUT",
-    DELETE = "DELETE",
-    TRACE = "TRACE",
-    CONNECT = "CONNECT"
-}
+	GET = "GET",
+	HEAD = "HEAD",
+	POST = "POST",
+	PUT = "PUT",
+	DELETE = "DELETE",
+	TRACE = "TRACE",
+	CONNECT = "CONNECT"
+	}
 
 class HttpRequest {
 
@@ -51,23 +51,27 @@ class HttpRequest {
     ref string user_agent () {
 	return this._user_agent;
     }
-    
-    ref string [] file_accepted () {
-	return this._file_accepted;
+
+    ref string connection () {
+	return this._connection;
     }
 
     ref string [] encoding () {
 	return this._encoding;
     }
-
-    ref string connection () {
-	return _connection;
+    
+    ref string [] file_accepted () {
+	return this._file_accepted;
+    }
+    
+    ref string[string] cookies () {
+	return this._cookies;
     }
 
     string toString () {
 	OutBuffer buf = new OutBuffer;
 	buf.write ("METHODE : " ~ to!string (type) ~ "\n");
-	buf.write ("URL : " ~ _url.toString () ~ "\n");
+	buf.write ("URL : " ~ _url.toString() ~ "\n");
 	buf.write ("PROTOCOL : " ~ _proto ~ "\n");
 	buf.write ("HOST : " ~ _host_addr ~ " : " ~ _host_port ~ "\n");
 	buf.write ("USER_AGENT : " ~ _user_agent ~ "\n");
@@ -78,8 +82,8 @@ class HttpRequest {
 	return buf.toString;
     }
     
-    private {	
-	HttpMethod type;	
+    private {
+	HttpMethod type;
 	HttpUrl _url;
 	string _proto;
 	string _host_addr;
@@ -89,8 +93,9 @@ class HttpRequest {
 	string [] _file_accepted;
 	string [] _encoding;
 	string _connection;
+	
+	string[string] _cookies;
     }
-    
 }
 
 enum HttpRequestTokens : string {
@@ -98,10 +103,9 @@ enum HttpRequestTokens : string {
 	COMA = ",",
 	SLASH = "/",
 	QUES_MARK = "?",
-	SHARP = "#",
 	EQUAL = "=",
 	AND = "&"
-}
+	}
 
 class ReqSyntaxError : Exception {
     this (Word word) {
@@ -114,8 +118,8 @@ class HttpRequestParser {
     
     static HttpRequest parser (string data) {
 	LexerString lexer = new LexerString (data);
-	lexer.setKeys (make!(Array!string)(EnumMembers!HttpRequestTokens, " ", "\n", "\r"));
-	lexer.setKeys (make!(Array!string)(" ", "\r", "\n"));
+	lexer.setKeys (make!(Array!string)(":", ",", "/", "?", "#", "=", "&", " ", "\n", "\r"));
+	lexer.setSkip (make!(Array!string)(" ", "\r", "\n"));
 	Word begin;
 	HttpRequest ret = new HttpRequest;
 	while (true) {
@@ -151,33 +155,27 @@ class HttpRequestParser {
 
     static HttpUrl parse_url (LexerString file) {
 	Word word;
-	file.setSkip (make!(Array!string)());
 	file.getNext (word);
 	if (word.str != HttpRequestTokens.SLASH)
 	    throw new ReqSyntaxError (word);
+	file.setSkip (make!(Array!string)());
 	Array!string path;
+	
 	while (true) {	    
 	    if (!file.getNext (word)) throw new ReqSyntaxError (word);
 	    if (word.str == " ") break;
 	    else if (word.str == HttpRequestTokens.QUES_MARK) break;
-	    else if (word.str == HttpRequestTokens.SHARP) break;
 	    else {
 		path.insertBack (word.str);
 	    }
-
 	    if (!file.getNext (word)) throw new ReqSyntaxError (word);
 	    if (word.str == HttpRequestTokens.QUES_MARK) break;
-	    else if (word.str == HttpRequestTokens.SHARP) break;
 	    else if (word.str == " ") break;
 	    else if (word.str != HttpRequestTokens.SLASH)
 		throw new ReqSyntaxError (word);	    
 	}
-	
-	if (word.str == HttpRequestTokens.SHARP) {
-	    string anchor = parse_anchor (file);
-	    file.setSkip (make!(Array!string)(" ", "\n", "\r"));
-	    return new HttpUrl (path, anchor);
-	} else if (word.str == HttpRequestTokens.QUES_MARK) {
+
+	if (word.str == HttpRequestTokens.QUES_MARK) {
 	    return parse_url_values(file, path);
 	} else {
 	    file.setSkip (make!(Array!string)(" ", "\n", "\r"));
@@ -196,10 +194,7 @@ class HttpRequestParser {
 	    params[key] = parse_value (file);
 	    if(!file.getNext (word))
 		throw new ReqSyntaxError (word);
-	    if (word.str == HttpRequestTokens.SHARP) {
-		string anchor = parse_anchor (file);
-		return new HttpUrl (path, params, anchor);
-	    } else if (word.str == " ")
+	    if (word.str == " ")
 		return new HttpUrl (path, params);
 	    else if (word.str != HttpRequestTokens.AND)
 		throw new ReqSyntaxError (word);
@@ -213,7 +208,7 @@ class HttpRequestParser {
 	    && word.str[0] <= '9') 
 	    return numeric (file, word);	
 	else {
-	    return HttpUrl.Parameter (HttpUrl.ParamEnum.STRING, &word.str);
+	    return HttpUrl.Parameter (HttpUrl.ParamEnum.STRING, word.str.dup);
 	}
     }
 
@@ -223,31 +218,19 @@ class HttpRequestParser {
 	foreach (it ; word.str) {
 	    if (it == '.') {		
 		if (dot) {
-		    return HttpUrl.Parameter (HttpUrl.ParamEnum.STRING, &word.str);
+		    return HttpUrl.Parameter (HttpUrl.ParamEnum.STRING, word.str.dup);
 		} else dot = true;
 	    } else if (it < '0' || it > '9') {
-		return HttpUrl.Parameter (HttpUrl.ParamEnum.STRING, &word.str);
+		return HttpUrl.Parameter (HttpUrl.ParamEnum.STRING, word.str.dup);
 	    }
 	}
 	
 	if (dot) {
-	    return HttpUrl.Parameter (HttpUrl.ParamEnum.FLOAT, new float (to!float (word.str)));
+	    return HttpUrl.Parameter (HttpUrl.ParamEnum.FLOAT, [(to!float (word.str))]);
 	} else {
-	    return HttpUrl.Parameter (HttpUrl.ParamEnum.INT, new int (to!int (word.str)));
+	    return HttpUrl.Parameter (HttpUrl.ParamEnum.INT, [to!int (word.str)]);
 	}	
-    }
-    
-    static string parse_anchor (LexerString lexer) {
-	Word word;
-	string anchor;
-	while (true) {
-	    if (!lexer.getNext (word)) throw new ReqSyntaxError (word);
-	    if (word.str == " ") break;
-	    else anchor ~= word.str;
-	}
-	return anchor;
-    }
-    
+    }        
     
     static void parse_host (LexerString lexer, ref HttpRequest req) {
 	Word addr, port, ign;
@@ -258,8 +241,7 @@ class HttpRequestParser {
 	req.host_addr = addr.str;
 	req.host_port = port.str;
     }
-
-
+    
     static void parse_user (LexerString lexer, ref HttpRequest req) {
 	Word suite, ign;
 	string total;
@@ -335,7 +317,5 @@ class HttpRequestParser {
 	lexer.getNext (next);
 	req.connection = next.str;
     }
-    
-    
-    
+
 }

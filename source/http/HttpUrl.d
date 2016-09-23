@@ -1,5 +1,5 @@
 module http.HttpUrl;
-import std.container;
+import std.container, std.outbuffer, std.conv;
 
 class HttpUrl {
 
@@ -12,10 +12,10 @@ class HttpUrl {
 
     struct Parameter {
 	ParamEnum type;
-	void * data;
+	void [] data;
 		
-	T * to (T) () {
-	    return cast(T*)this.data;
+	ref T to (T) () {
+	    return (cast(T[])this.data)[0];
 	}
 
 	static ref Parameter empty () {
@@ -25,6 +25,15 @@ class HttpUrl {
 	private {
 	    static Parameter _empty = Parameter (ParamEnum.VOID, null);
 	}
+
+	string toString () {
+	    switch (type) {
+	    case ParamEnum.STRING: return "Parameter(STRING," ~ cast(string)data ~ ")";
+	    case ParamEnum.INT: return "Parameter(INT," ~ std.conv.to!string ((cast(int[])data)[0]) ~ ")";
+	    case ParamEnum.FLOAT: return "Parameter(FLOAT," ~ std.conv.to!string ((cast(float[])data)[0]) ~ ")";
+	    default : return "Parameter (VOID)";
+	    }
+	}
 	
     }
 
@@ -32,28 +41,13 @@ class HttpUrl {
 	this._path = path;
     }
 
-    this (Array!string path, Parameter[string] params, string anchor) {
-	this._path = path;
-	this._params = params;
-	this._anchor = anchor;
-    }
-
     this (Array!string path, Parameter[string] params) {
 	this._path = path;
 	this._params = params;
     }
-
-    this (Array!string path, string anchor) {
-	this._path = path;
-	this._anchor = anchor;
-    }
     
     ref Array!string path () {
 	return this._path;
-    }
-
-    ref string anchor () {
-	return this._anchor;
     }
 
     ref Parameter param (string name) {
@@ -61,10 +55,20 @@ class HttpUrl {
 	if (it !is null) return *it;
 	else return Parameter.empty;
     }
+
+    string toString () {
+	OutBuffer buf = new OutBuffer;
+	buf.write ("PATH : /");
+	foreach (it ; path) {
+	    buf.write (it);
+	    buf.write (" / ");
+	}
+	buf.write ("?" ~ to!string (_params));
+	return buf.toString ();
+    }
     
     private {
 	Array!string _path;
-	string _anchor;
 	Parameter [string] _params;
     }
 }
