@@ -2,37 +2,124 @@ module utils.XMLoader;
 import utils.LexerFile;
 import std.outbuffer, std.traits;
 import std.conv : to;
-import std.container;
+import std.container, std.string, std.stdio;
 
 struct Location {
     string filename;
     long line;
-    long column;
+    long column;    
+}
+
+class Identifiant {
+    string name;
+    Identifiant space;
+    Location locate;
+    
+    this (string name, Location locate) {
+	this.name = name;
+	this.locate = locate;
+    }
+
+    this (string name, Identifiant space, Location locate) {
+	this.name = name;
+	this.space = space;
+	this.locate = locate;
+    }
+
+    static Identifiant eof () {
+	return new Identifiant ("", Location("", -1, -1));
+    }
+
+    bool opEquals (Object other_) {
+	Identifiant other = cast(Identifiant) other_;
+	if (other is null) return false;
+	if (this.space !is null) {
+	    return this.name == other.name && this.space == other.space;
+	} else {
+	    return this.name == other.name;
+	}
+    }
+
+
+    string toString () {
+	if (space !is null)
+	    return space.toSimpleString() ~ ":" ~ name ~ "!" ~ to!string (locate);
+	else return name ~ "!" ~ to!string (locate);
+    }
+
+    private {
+	string toSimpleString () {
+	    return this.name;
+	}
+    }
 }
 
 class Balise {
 
-    this (string name, Location locate) {
+    this (Identifiant name) {
 	this.name = name;
-	this.location = locate;
     }
     
-    string name;
-    string [string] attrs;
-    Balise [] childs;
-    Location location;
+    this (Identifiant name, string [Identifiant] attrs) {
+	this.name = name;
+	this.attrs = attrs;
+    }
+    
+    this (Identifiant name, Array!Balise childs) {
+	this.name = name;
+	this.childs = childs;
+    }
+    
+    this (Identifiant name, string [Identifiant] attrs, Array!Balise childs) {
+	this.name = name;
+	this.attrs = attrs;
+	this.childs = childs;
+    }
+    
+    Identifiant name;
+    string [Identifiant] attrs;
+    Array!Balise childs;
+
+    string toString (int nb = 0) {
+	OutBuffer buf = new OutBuffer();
+	buf.write (rightJustify("", nb, ' '));
+	buf.write (this.name.toString ());
+	buf.write (" ~> ");
+	foreach (key, value ; attrs) {
+	    buf.write (key.toString ());
+	    buf.write ("=[");
+	    buf.write (value);
+	    buf.write ("]");
+	}
+	buf.write ('\n');
+	foreach (it ; childs) {
+	    buf.write (it.toString(nb + 4));
+	    buf.write ("\n");
+	}
+	return buf.toString ();
+    }
+    
 }
 
 class ProcInst : Balise {
-    this (string name, Location locate) {
-	super (name, locate);	
+    this (Identifiant name, string[Identifiant] attrs) {
+	super (name, attrs);	
     }
 }
 
 class Text : Balise {
-    this (string content, Location locate) {
-	super ("", locate);
+    this (string content) {
+	super (Identifiant.eof);
 	this.content = content;
+    }
+
+    override string toString (int nb = 0) {
+	OutBuffer buf = new OutBuffer;
+	buf.write (rightJustify("", nb, ' '));
+	buf.write ("[");
+	buf.write (content);
+	buf.write ("]");
+	return buf.toString ();
     }
     
     string content;    
@@ -47,7 +134,9 @@ enum XMLTokens : string {
 	START_COMMENT = "<!--",
 	END_COMMENT = "-->",
 	START_PROC = "<?",
-	END_PROC = "?>"
+	END_PROC = "?>",
+	EQUAL = "=",
+	QUOT = "\""
 }
 
 class XMLSyntaxError : Exception {
@@ -117,13 +206,18 @@ class XMLoader {
 		roots.insertBack (readProc (lex));
 	    else throw new XMLSyntaxError (lex, word);
 	}
-	return make_eof ();
+	
+	if (roots.length == 1) {
+	    return roots[0];
+	} else {
+	    return new Balise (Identifiant.eof, roots);
+	}
     }        
     
     private {
 
 	static Balise make_eof () {
-	    return new Balise ("", Location ("", -1, -1));
+	    return new Balise (Identifiant.eof);
 	}
 	
 	/**
@@ -137,9 +231,73 @@ class XMLoader {
 	 ----
 	 */
 	Balise readOpen (LexerFile file) {
-	    return make_eof ();
+	    Identifiant id = readIdentifiant (file);
+	    Word word;
+	    Array!Balise childs;
+	    string [Identifiant] attrs;
+	    while (true) {
+		auto end = file.getNext (word);
+		if (!end) throw new XMLSyntaxError (file, word);
+		if (word.str == XMLTokens.END) break;
+		else if (word.str == XMLTokens.SEND)
+		    return new Balise (id, attrs);
+		else {
+		    file.rewind ();
+		    readAttr (file, attrs);
+		}
+	    }
+	    
+	    while (true) {
+		auto end = file.getNext (word);
+		if (!end) throw new XMLSyntaxError (file, word);
+		if (word.str == XMLTokens.START)
+		    childs.insertBack (readOpen (file));
+		else if (word.str == XMLTokens.SSTART) {
+		    Identifiant close_id = readIdentifiant (file);
+		    if (close_id != id)
+			throw new XMLSyntaxError (file, word);
+		    if (!file.getNext (word) || word.str != XMLTokens.END)
+			throw new XMLSyntaxError (file, word);
+		    return new Balise (id, attrs, childs);
+		} else {
+		    file.rewind ();
+		    childs.insertBack (readText (file));
+		}
+	    }
+	    
 	}
 
+	/**
+	 Tout ce qui est nom de balise, variable...
+	 */
+	Identifiant readIdentifiant (LexerFile file) {
+	    Word word;
+	    auto end = file.getNext (word);
+	    if (!end) throw new XMLSyntaxError (file, word);
+	    string name = word.str;
+	    Location locate = Location(file.getFileName(), word.line, word.column);
+	    if (!file.getNext (word))
+		throw new XMLSyntaxError (file, word);
+	    if (word.str == XMLTokens.SEMI_COLON)
+		return readIdentifiant (file, new Identifiant (name, locate));
+	    file.rewind ();
+	    return new Identifiant (name, locate);
+	}
+
+	Identifiant readIdentifiant (LexerFile file, Identifiant space) {
+	    Word word;
+	    auto end = file.getNext (word);
+	    if (!end) throw new XMLSyntaxError (file, word);
+	    string name = word.str;
+	    Location locate = Location(file.getFileName(), word.line, word.column);
+	    if (!file.getNext (word))
+		throw new XMLSyntaxError (file, word);
+	    if (word.str == XMLTokens.SEMI_COLON)
+		return readIdentifiant (file, new Identifiant (name, space, locate));
+	    file.rewind ();
+	    return new Identifiant (name, space, locate);
+	}
+	
 	/**
 	 Examples:
 	 ----
@@ -153,23 +311,17 @@ class XMLoader {
 	/**
 	 Examples:
 	 ----
-	    </b>
-	 // ^^^^
-	 ----
-	 */
-	Balise readClose (LexerFile file) {
-	    return make_eof ();
-	}
-
-	/**
-	 Examples:
-	 ----
 	 <b attr="value"/>
 	 // ^^^^^^^^^^^^
 	 ----
 	 */
-	string readAttr (LexerFile file) {
-	    return "";
+	void readAttr (LexerFile file, ref string [Identifiant] attrs) {
+	    Identifiant id = readIdentifiant (file);
+	    Word word;
+	    if (!file.getNext (word) || word.str != XMLTokens.EQUAL)
+		throw new XMLSyntaxError (file, word);
+	    string value = readValue (file);
+	    attrs[id] = value;
 	}
 
 	/**
@@ -180,7 +332,21 @@ class XMLoader {
 	 ----
 	 */
 	string readValue (LexerFile file) {
-	    return "";
+	    Word word;
+	    string total;
+	    file.setSkip (make!(Array!string)());
+	    while (true) {
+		auto end = file.getNext (word);
+		if (!end) throw new XMLSyntaxError (file, word);
+		if (find ([EnumMembers!XMLTokens], word.str) != []) {
+		    file.rewind ();
+		    file.setSkip (make!(Array!string)(" ", "\n", "\r"));
+		    return (total);
+		} else {
+		    if (word.str == "\n" || word.str == "\r") total ~= " ";
+		    else total ~= word.str;
+		}		    
+	    }
 	}
 
 	/**
@@ -190,8 +356,22 @@ class XMLoader {
 	 // ^^^^^^^
 	 ----
 	 */
-	string readContent (LexerFile file) {
-	    return "";
+	Balise readText (LexerFile file) {
+	    Word word;
+	    string total;
+	    file.setSkip (make!(Array!string)());
+	    while (true) {
+		auto end = file.getNext (word);
+		if (!end) throw new XMLSyntaxError (file, word);
+		if (find ([EnumMembers!XMLTokens], word.str) != []) {
+		    file.rewind ();
+		    file.setSkip (make!(Array!string)(" ", "\n", "\r"));
+		    return new Text (total);
+		} else {
+		    if (word.str == "\n" || word.str == "\r") total ~= " ";
+		    else total ~= word.str;
+		}		    
+	    }
 	}
 
 	string filename;

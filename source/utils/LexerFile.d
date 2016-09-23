@@ -51,6 +51,7 @@ class LexerFile {
     }
 
     void setSkip(Array!string skip) {
+	this.skip.clear ();
 	foreach(string it ; skip) {
 	    this.skip.insertBack(it);
 	}
