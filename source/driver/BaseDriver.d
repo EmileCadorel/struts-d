@@ -5,6 +5,7 @@ import http.HttpSession;
 import http.HttpServer;
 import http.HttpRequest;
 import http.HttpResponse;
+import http.HttpUrl;
 import utils.LexerString;
 import utils.Log;
 import control.Controller;
@@ -53,10 +54,16 @@ class BaseDriver : HttpSession {
     while ((status_recv = this.recv_request (data)) > 0) {
       writeln ("Reception...");
       HttpRequest request = this.toRequest (data);
-      writeln (request);
+      // writeln (request);
       HttpResponse response = new HttpResponse;
 
-      Controller controller = this.container.get!HomeController ("home");
+      /* Test simple, si on ajoute 'home' a l'url, ca marche, sinon on affiche not found page */
+      HttpUrl url = request.url;
+      string controller_name = "test";
+      if (url.path.length > 0)
+	controller_name = url.path[0];
+
+      Controller controller = this.container.get!HomeController (controller_name);
       if (controller is null)
       	controller = new NotFoundController;
       controller.unpackRequest (request);
@@ -71,14 +78,14 @@ class BaseDriver : HttpSession {
       } else {
 	this.sessid = this.create_sessid ();
       }
-      writeln ("Sessid : " ~ this.sessid);
+      // writeln ("Sessid : " ~ this.sessid);
       response.cookies["SESSID"] = this.sessid;
       response.addContent (controller.execute ());
       response.code = HttpResponseCode.OK;
       response.proto = "HTTP/1.1";
       response.type = "text/html";
 
-      writeln ("Envoie de...");
+      // writeln ("Envoie de...");
       this.send_response (response);
     }
     if (status_recv < 0)
