@@ -1,13 +1,22 @@
 module control.ControllerContainer;
 import std.stdio;
+import control.Controller;
+
+/* TEST */
+class HomeController : Controller {
+  override string execute () {
+    return "ok";
+  }
+}
 
 
 class ControllerContainer {
 
   this (string[string] list_controllers) {
     foreach (name, class_name ; list_controllers) {
-      datas[name] = cast(void*)Object.factory(class_name);
-      writeln (name, " -> ", class_name, " charge.");
+      auto inst = cast(void*)Object.factory(class_name);
+      datas[name] = inst;
+      writeln (name, " -> ", inst, " charge.");
     }
   }
 
@@ -20,13 +29,7 @@ class ControllerContainer {
   }
 
   T get (T : Object) (string name) {
-    writeln ("{");
-    foreach (key, value ; datas) {
-      writeln (key, " -> ", value);
-    }
-    writeln ("elem recherche : ", name, "}");
     auto elem = (name in datas);
-    writeln(elem);
     if (elem is null) return null;
     else return cast (T) (*elem);
   }

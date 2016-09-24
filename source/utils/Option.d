@@ -4,7 +4,10 @@ import utils.Singleton;
 
 class Option {
 
-  this () {}
+  this () {
+    this._log_file_path = "logs.txt";
+    this._config_file_path = "config.xml";
+  }
   this (string[string] list) {
     foreach (key, value ; list) {
       if (key == "LOG_FILE_PATH") {

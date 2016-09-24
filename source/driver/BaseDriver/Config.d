@@ -2,8 +2,28 @@ module driver.BaseDriverConfig;
 
 import utils.XMLoader;
 
+enum SessIdState : string {
+ NONE = "NONE",
+   COOKIE = "COOKIE",
+   URL = "URL"
+   }
+
+/**
+   Classe permettant de gérer le fichier de configuration d'une application web
+ */
 class Config {
+
+  this () {
+    this._use_sessid = SessIdState.COOKIE;
+    this.init ("example/config.xml");
+  }
+
   this (string config_file_path) {
+    this._use_sessid = SessIdState.COOKIE;
+    this.init (config_file_path);
+  }
+
+  void init (string config_file_path) {
     XMLoader xml = new XMLoader (config_file_path);
     Balise b = xml.root();
 
@@ -12,6 +32,8 @@ class Config {
     foreach (child ; b.childs) {
       if (child.name.name == "controllers") {
 	this._get_controllers (child);
+      } else if (child.name.name == "general") {
+	this._get_general (child);
       } else {
 	assert (1 != 1, "foireux ici");
       }
@@ -22,7 +44,24 @@ class Config {
     return this.controllers;
   }
 
+  string use_sessid() {
+    return this._use_sessid;
+  }
+
   private {
+    void _get_general (Balise b) {
+      foreach (param ; b.childs) {
+	assert (param.childs.length == 1, "Erreur format.");
+	if (param.name.name == "use_sessid") {
+	  Balise value = param.childs[0];
+	  assert (value.getValue() == "NONE" || value.getValue == "COOKIE" || value.getValue == "URL", "Erreur de format");
+	  this._use_sessid = value.getValue();
+	} else {
+	  assert (1!=1, "Erreur de format");
+	}
+      }
+    }
+
     void _get_controllers (Balise b) {
       foreach (controller ; b.childs) {
 	assert (controller.name.name == "controller", "Format du fichier de config invalide : " ~ controller.name.name);
@@ -49,5 +88,6 @@ class Config {
     }
 
     string[string] controllers;
+    string _use_sessid;
   }
 }
