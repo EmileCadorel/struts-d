@@ -41,7 +41,7 @@ class Identifiant {
     }
 
 
-    string toString () {
+    string toStr () {
 	if (space !is null)
 	    return space.toSimpleString() ~ ":" ~ name ~ "!" ~ to!string (locate);
 	else return name ~ "!" ~ to!string (locate);
@@ -80,20 +80,20 @@ class Balise {
     string [Identifiant] attrs;
     Array!Balise childs;
 
-    string toString (int nb = 0) {
+    string toStr (int nb = 0) {
 	OutBuffer buf = new OutBuffer();
 	buf.write (rightJustify("", nb, ' '));
-	buf.write (this.name.toString ());
+	buf.write (this.name.toStr ());
 	buf.write (" ~> ");
 	foreach (key, value ; attrs) {
-	    buf.write (key.toString ());
+	    buf.write (key.toStr ());
 	    buf.write ("=[");
 	    buf.write (value);
 	    buf.write ("]");
 	}
 	buf.write ('\n');
 	foreach (it ; childs) {
-	    buf.write (it.toString(nb + 4));
+	    buf.write (it.toStr (nb + 4));
 	    buf.write ("\n");
 	}
 	return buf.toString ();
@@ -113,7 +113,7 @@ class Text : Balise {
 	this.content = content;
     }
 
-    override string toString (int nb = 0) {
+    override string toStr (int nb = 0) {
 	OutBuffer buf = new OutBuffer;
 	buf.write (rightJustify("", nb, ' '));
 	buf.write ("[");
