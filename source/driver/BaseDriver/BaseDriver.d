@@ -5,19 +5,20 @@ import http.HttpSession;
 import http.HttpServer;
 import http.HttpRequest;
 import http.HttpResponse;
+import http.HttpUrl;
 import utils.LexerString;
 import utils.Log;
+import utils.Option;
 import control.Controller;
 import control.NotFoundController;
 import control.ControllerContainer;
-
-// Pour le test
-import HomeController;
+import driver.BaseDriverConfig;
 
 class BaseDriver : HttpSession {
   this (Socket socket) {
     super (socket);
-    container = new ControllerContainer;
+    config = new Config (Option.instance.config_file_path);
+    container = new ControllerContainer (config.get_controllers());
     log = Log.instance;
   }
 
@@ -26,19 +27,12 @@ class BaseDriver : HttpSession {
     writeln ("Nouvelle connexion : ");
     writeln (addr.toAddrString());
 
-    // on récupère la liste des controleurs
-    this.get_controllers (container);
     this.start_routine ();
   }
 
   void on_end () {
     log.add_info ("Deconnexion !");
     writeln ("Deconnexion !");
-  }
-
-  // tmp, on va appeler un fichier xml par la suite...
-  void get_controllers (ControllerContainer s) {
-    s["home"] = new HomeController;
   }
 
   /**
@@ -50,15 +44,29 @@ class BaseDriver : HttpSession {
     string data = "";
     int status_recv;
 
+    string last_page = "";
     while ((status_recv = this.recv_request (data)) > 0) {
       writeln ("Reception...");
       HttpRequest request = this.toRequest (data);
-      writeln (request);
+      // writeln (request);
       HttpResponse response = new HttpResponse;
 
-      Controller controller = this.container.get!HomeController ("home");
-      if (controller is null)
+      /* Test simple, si on ajoute 'home' a l'url, ca marche, sinon on affiche not found page */
+      HttpUrl url = request.url;
+      string controller_name = "test";
+      if (url.path.length > 0)
+	controller_name = url.path[0];
+
+      if (controller_name == "favicon.ico") {
+	controller_name = last_page;
+      } else {
+	last_page = controller_name;
+      }
+      // writeln ("controller : ", controller_name);
+      Controller controller = this.container.get!Controller (controller_name);
+      if (controller is null) {
       	controller = new NotFoundController;
+      }
       controller.unpackRequest (request);
 
       string[string] cookies = request.cookies();
@@ -71,14 +79,14 @@ class BaseDriver : HttpSession {
       } else {
 	this.sessid = this.create_sessid ();
       }
-      writeln ("Sessid : " ~ this.sessid);
+      // writeln ("Sessid : " ~ this.sessid);
       response.cookies["SESSID"] = this.sessid;
       response.addContent (controller.execute ());
       response.code = HttpResponseCode.OK;
       response.proto = "HTTP/1.1";
       response.type = "text/html";
 
-      writeln ("Envoie de...");
+      // writeln ("Envoie de...");
       this.send_response (response);
     }
     if (status_recv < 0)
@@ -119,6 +127,7 @@ class BaseDriver : HttpSession {
   }
 
   private {
+    Config config;
     ControllerContainer container;
     string sessid;
     Log log;

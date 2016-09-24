@@ -1,3 +1,4 @@
+module example.HomeController;
 import control.Controller;
 
 // On va simplement renvoyer un message basique pour le moment..

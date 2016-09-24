@@ -1,0 +1,8 @@
+<config>
+  <controllers>
+    <controller>
+      <name>home</name>
+      <class>example.HomeController</class>
+    </controller>
+  </controllers>
+</config>
