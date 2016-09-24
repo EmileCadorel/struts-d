@@ -1,5 +1,5 @@
 module control.Controller;
-import http.HttpRequest;
+import http.request;
 
 abstract class Controller {
 

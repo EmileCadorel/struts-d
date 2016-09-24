@@ -1,8 +1,8 @@
 {
-	"name": "struts-d",
-	"description": "A minimal D application.",
-	"copyright": "Copyright © 2016, emile",
-	"authors": ["emile"],
-	"dependencies": {
-	}
+    "name": "struts-d",
+    "description": "A minimal D application.",
+    "copyright": "Copyright © 2016, emile",
+    "authors": ["emile"],
+    "dependencies": {
+    }
 }

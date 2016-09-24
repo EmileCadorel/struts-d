@@ -1,5 +1,5 @@
 module utils.XMLoader;
-import utils.LexerFile;
+import utils.lexer;
 import std.outbuffer, std.traits;
 import std.conv : to;
 import std.container, std.string, std.stdio;

@@ -1,4 +1,4 @@
-module http.HttpUrl;
+module http.requestmod.HttpUrl;
 import std.container, std.outbuffer, std.conv;
 
 class HttpUrl {

@@ -3,10 +3,8 @@ module driver.BaseDriver;
 import std.stdio, std.socket, std.container, std.conv;
 import http.HttpSession;
 import http.HttpServer;
-import http.HttpRequest;
-import http.HttpResponse;
-import http.HttpUrl;
-import utils.LexerString;
+import http.request;
+import http.response;
 import utils.Log;
 import control.Controller;
 import control.NotFoundController;
@@ -54,7 +52,7 @@ class BaseDriver : HttpSession {
     while ((status_recv = this.recv_request (data)) > 0) {
       writeln ("Reception...");
       HttpRequest request = this.toRequest (data);
-      // writeln (request);
+      writeln (request);
       HttpResponse response = new HttpResponse;
 
       /* Test simple, si on ajoute 'home' a l'url, ca marche, sinon on affiche not found page */

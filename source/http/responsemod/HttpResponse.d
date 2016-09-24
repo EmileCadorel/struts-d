@@ -1,4 +1,4 @@
-module http.HttpResponse;
+module http.responsemod.HttpResponse;
 import std.outbuffer;
 import std.datetime;
 import std.conv;

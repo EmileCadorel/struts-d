@@ -1,5 +1,4 @@
-module utils.LexerFile;
-import utils.Exception;
+module utils.lexermod.LexerString;
 import std.range : take;
 import std.algorithm : equal, find;
 import std.stdio, std.conv;
@@ -7,42 +6,16 @@ import std.outbuffer;
 import std.string;
 import std.container;
 import std.file;
+import utils.lexermod.Word;
 
-struct Word {
-    string str = "";
-    bool isKey = false;
-    int line = 0;
-    int column = 0;
 
-    void reset() {
-	str = "";
-	isKey = false;
+class LexerString {
+
+    this(string data) {
+	this.file = data;
+	this.currentChar = 0;
+	this.currentWord = -1;
     }
-
-    string toString () {
-	return str ~ "(" ~ to!string (line) ~ ":" ~ to!string(column) ~ ")";
-    }
-}
-
-class LexerFile {
-
-    this(string fileName) {
-	try {
-	    this.filename = fileName;
-	    this.currentWord = -1;
-	    this.line = 1;
-	    this.column = 1;
-	    if (fileName.isDir) throw new NoSuchFile (filename);
-	    this.file = File(fileName, "r");
-	} catch (Throwable o) {
-	    throw new NoSuchFile (filename);
-	}
-    }
-
-    string getFileName () {
-	return this.filename;
-    }
-
 
     void setKeys (Array!string keys) {
 	foreach (string it ; keys) {
@@ -51,10 +24,7 @@ class LexerFile {
     }
 
     void setSkip(Array!string skip) {
-	this.skip.clear ();
-	foreach(string it ; skip) {
-	    this.skip.insertBack(it);
-	}
+	this.skip = skip;
     }
 
     void addComment (string beg, string stop) {
@@ -107,23 +77,16 @@ class LexerFile {
 	}
     }
 
+
     void rewind(int nb = 1) {
 	currentWord -= nb;
     }
 
-    bool getLine(int line, ref string line_str) {
-	file.seek(0);
-	string cline = null;
-	for(int nb = 1; nb <= line; nb++) cline = file.readln();
-	if (file.eof() || cline is null) return false;
-	else line_str = cline;
-	return true;
-    }
-
     bool getWord (ref Word word) {
-	ulong where = file.tell();
-	string line = file.readln();
-	if(file.eof() || line is null) return false;
+	if (currentChar >= file.length - 1) {
+	    return false;
+	}
+	auto line = file[currentChar .. file.length];
 	int max = 0, beg = to!int(line.length);
 	foreach (string it ; keys) {
 	    long id = indexOf(line, it);
@@ -134,25 +97,16 @@ class LexerFile {
 	    }
 	}
 
-	if(beg == to!int(line.length) + 1)
+	if(beg == to!int(line.length) + 1) {
 	    word.str = line;
-	else if (beg == 0) {
+	    currentChar = file.length;
+	} else if (beg == 0) {
 	    word.str = line[0 .. max];
 	    word.isKey = true;
-	    file.seek(where + max);
+	    currentChar += max;
 	} else if (beg > 0) {
 	    word.str = line[0 .. beg];
-	    file.seek(where + beg);
-	}
-
-	word.line = this.line;
-	word.column = this.column;
-
-	if(word.isKey && (word.str == "\n" || word.str == "\r")) {
-	    this.line++;
-	    this.column = 1;
-	} else {
-	    this.column += word.str.length;
+	    currentChar += beg;
 	}
 	return true;
     }
@@ -175,12 +129,12 @@ class LexerFile {
 	skip.insertBack(name);
     }
 
-    string toString () {
+    string toStr () {
 	OutBuffer buf = new OutBuffer;
 	Array!ulong sizes;
 	foreach (word ; read) {
-	    buf.write(word.toString ~ " ");
-	    sizes.insertBack( word.toString.length + 1 );
+	    buf.write(word.toStr ~ " ");
+	    sizes.insertBack( word.toStr.length + 1 );
 	}
 	buf.write("\n");
 	foreach (it ; 0 .. currentWord + 1) {
@@ -191,13 +145,13 @@ class LexerFile {
     }
 
     ~this() {
-	file.close();
     }
 
     //private:
 
     string filename;
-    File file;
+    string file;
+    ulong currentChar;
     int line;
     int column;
     int currentWord;
