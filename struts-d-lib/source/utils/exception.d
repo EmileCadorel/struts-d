@@ -1,5 +1,5 @@
-module utils.Exception;
-public import utils.NoSuchFile;
+module utils.exception;
+public import utils.exceptionmod.NoSuchFile;
 
 
 class StrutsException : Exception {

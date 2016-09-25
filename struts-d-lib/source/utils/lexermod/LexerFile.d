@@ -1,5 +1,5 @@
 module utils.lexermod.LexerFile;
-import utils.Exception;
+import utils.exception;
 import std.range : take;
 import std.algorithm : equal, find;
 import std.stdio, std.conv;

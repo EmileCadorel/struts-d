@@ -1,6 +1,6 @@
-module utils.NoSuchFile;
+module utils.exceptionmod.NoSuchFile;
 import std.exception;
-import utils.Exception;
+import utils.exception;
 
 class NoSuchFile : StrutsException {
 

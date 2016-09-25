@@ -4,5 +4,6 @@
     "copyright": "Copyright © 2016, emile",
     "authors": ["emile"],
     "dependencies": {
+	"struts-dlib" : "*"
     }
 }
