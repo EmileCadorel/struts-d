@@ -87,8 +87,6 @@ class BaseDriver : HttpSession {
     HttpResponse response = new HttpResponse;
     controller.unpackRequest (request);
 
-    writeln ("use sessid : ", config.use_sessid);
-
     // on check si le dev veut utiliser les cookies pour le sessid
     if (this.config.use_sessid == SessIdState.COOKIE) {
       string[string] cookies = request.cookies();
@@ -99,14 +97,14 @@ class BaseDriver : HttpSession {
       }
       response.cookies["SESSID"] = this.sessid;
     } else if (this.config.use_sessid == SessIdState.URL) {
-      //on utilise l'url
-      HttpUrl url = request.url;
-      if ("SESSID" in url.params) {
-	this.sessid = url.param("SESSID").to!string();
-      } else {
-	this.sessid = this.create_sessid ();
+      if (this.sessid.length == 0) {
+	HttpUrl url = request.url;
+	if ("SESSID" in url.params) {
+	  this.sessid = url.param("SESSID").to!string();
+	} else {
+	  this.sessid = this.create_sessid ();
+	}
       }
-      response.cookies["SESSID"] = this.sessid;
     }
     response.addContent (controller.execute ());
     response.code = HttpResponseCode.OK;
