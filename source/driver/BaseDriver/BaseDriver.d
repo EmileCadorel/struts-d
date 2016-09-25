@@ -125,7 +125,12 @@ class BaseDriver : HttpSession {
       to!string(date.hour) ~
       to!string(date.minute) ~
       to!string(date.second);
-    return str;
+    ubyte[16] hash = md5Of (str);
+    string sessid = "";
+    foreach (ubyte n ; hash) {
+      sessid ~= to!string(n);
+    }
+    return sessid;
   }
 
   /**
