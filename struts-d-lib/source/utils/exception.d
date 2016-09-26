@@ -1,5 +1,7 @@
 module utils.exception;
 public import utils.exceptionmod.NoSuchFile;
+public import utils.exceptionmod.ReqSyntaxException;
+public import utils.exceptionmod.XMLSyntaxError;
 
 
 class StrutsException : Exception {

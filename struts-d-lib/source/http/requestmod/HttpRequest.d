@@ -61,6 +61,18 @@ class HttpRequest {
     ref string [] file_accepted () {
 	return this._file_accepted;
     }
+
+    ref string referer () {
+	return this._referer;
+    }
+
+    ref string cache_control () {
+	return this._cache_control;
+    }
+
+    ref HttpParameter [string] post_values () {
+	return this._post_values;
+    }
     
     ref string[string] cookies () {
 	return this._cookies;
@@ -77,6 +89,15 @@ class HttpRequest {
 	buf.write ("FILE_FORMAT : " ~ to!string (_file_accepted) ~ "\n");
 	buf.write ("ENCODING : " ~ to!string(_encoding) ~ "\n");
 	buf.write ("CONNECTION : " ~ _connection ~ "\n");
+	buf.write ("POST_VALUES : ");
+	buf.write ("[");
+	foreach (key, value ; _post_values) {
+	    buf.write (key);
+	    buf.write (" ~> ");
+	    buf.write (value.toString ());
+	    buf.write (", ");
+	}
+	buf.write ("]\n");
 	return buf.toString;
     }
     
@@ -91,7 +112,10 @@ class HttpRequest {
 	string [] _file_accepted;
 	string [] _encoding;
 	string _connection;
+	string _referer;
+	string _cache_control;
 	
-	string[string] _cookies;
+	HttpParameter [string] _post_values;
+	string [string] _cookies;
     }
 }

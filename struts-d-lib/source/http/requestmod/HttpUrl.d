@@ -1,47 +1,14 @@
 module http.requestmod.HttpUrl;
 import std.container, std.outbuffer, std.conv;
+import http.requestmod.HttpParameter;
 
 class HttpUrl {
-
-    enum ParamEnum {
-	STRING,
-	INT,
-	FLOAT,
-	VOID
-    }
-
-    struct Parameter {
-	ParamEnum type;
-	void [] data;
-		
-	ref T to (T) () {
-	    return (cast(T[])this.data)[0];
-	}
-
-	static ref Parameter empty () {
-	    return _empty;
-	}
-
-	private {
-	    static Parameter _empty = Parameter (ParamEnum.VOID, null);
-	}
-
-	string toString () {
-	    switch (type) {
-	    case ParamEnum.STRING: return "Parameter(STRING," ~ cast(string)data ~ ")";
-	    case ParamEnum.INT: return "Parameter(INT," ~ std.conv.to!string ((cast(int[])data)[0]) ~ ")";
-	    case ParamEnum.FLOAT: return "Parameter(FLOAT," ~ std.conv.to!string ((cast(float[])data)[0]) ~ ")";
-	    default : return "Parameter (VOID)";
-	    }
-	}
-	
-    }
 
     this (Array!string path) {
 	this._path = path;
     }
 
-    this (Array!string path, Parameter[string] params) {
+    this (Array!string path, HttpParameter[string] params) {
 	this._path = path;
 	this._params = params;
     }
@@ -50,10 +17,10 @@ class HttpUrl {
 	return this._path;
     }
 
-    ref Parameter param (string name) {
+    ref HttpParameter param (string name) {
 	auto it = (name in _params);
 	if (it !is null) return *it;
-	else return Parameter.empty;
+	else return HttpParameter.empty;
     }
 
     string toString () {
@@ -69,6 +36,6 @@ class HttpUrl {
     
     private {
 	Array!string _path;
-	Parameter [string] _params;
+	HttpParameter [string] _params;
     }
 }
