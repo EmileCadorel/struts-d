@@ -1,6 +1,7 @@
 module driver.BaseDriver;
 
 import std.stdio, std.socket, std.container, std.conv;
+import std.digest.md, std.datetime;
 import http.HttpSession;
 import http.HttpServer;
 import http.request;
@@ -10,129 +11,169 @@ import control.Controller;
 import control.NotFoundController;
 import control.ControllerContainer;
 import utils.XMLoader;
+import utils.Option;
 
 // Pour le test
 import HomeController;
 
+/**
+   Driver de base pour ce serveur web
+   Prend en charge les sessions:
+   On va chercher la session via un cookie ou une donnée de l'url (selon config)
+   Se base sur un fichier de config pour aller chercher les controlleurs de l'utilisateur (chemin du fichier dans singleton Option)
+   On enregistre toute l'activité via un fichier de log (chemin donné dans le singleton Option)
+*/
 class BaseDriver : HttpSession {
-    this (Socket socket) {
-	super (socket);
-	container = new ControllerContainer;
-	log = Log.instance;
+  this (Socket socket) {
+    super (socket);
+    container = new ControllerContainer;
+    config = Option.instance;
+    log = Log.instance;
+  }
+
+  void on_begin (Address addr) {
+    this.client_addr = addr.toAddrString();
+    log.add_info ("Connexion de " ~ this.client_addr);
+
+    // tmp
+    this.get_controllers (container);
+
+    this.start_routine ();
+  }
+
+  void on_end () {
+    log.add_info ("Deconnexion de " ~ this.client_addr);
+  }
+
+  // tmp, on va appeler un fichier xml par la suite...
+  void get_controllers (ControllerContainer s) {
+    s["home"] = new HomeController;
+  }
+
+  void start_routine () {
+    string data = "";
+    int status_recv = this.recv_request (data);
+
+    if (status_recv < 0) {
+      log.add_err (this.socket.getErrorText());
+    } else {
+      HttpRequest request = this.toRequest (data);
+      log.add_info (this.client_addr ~ " : " ~ to!string(request.http_method) ~ " " ~ request.url.toString());
+
+      string controller_name;
+      HttpUrl url = request.url;
+      if (url.path.length > 0)
+	controller_name = url.path[0];
+
+      // on s'emmerde pas avec le favicon demandé à chaque fois...
+      if (controller_name == "favicon.ico") {
+	controller_name = "";
+      }
+
+      Controller controller = this.container.get!Controller (controller_name);
+      if (controller is null) {
+	controller = new NotFoundController;
+      }
+
+      HttpResponse response = this.build_response (request, controller);
+      this.send_response (response);
     }
+  }
 
-    void on_begin (Address addr) {
-	log.add_info ("Nouvelle connexion -> " ~ addr.toAddrString());
-	writeln ("Nouvelle connexion : ");
-	writeln (addr.toAddrString());
+  /**
+     Renvoie une reponse (HttpResponse) en fonction de la requete et du controlleur
+  */
+  HttpResponse build_response (HttpRequest request, Controller controller) {
+    HttpResponse response = new HttpResponse;
+    controller.unpackRequest (request);
 
-	// on récupère la liste des controleurs
-	this.get_controllers (container);
-	this.start_routine ();
-    }
-
-    void on_end () {
-	log.add_info ("Deconnexion !");
-	writeln ("Deconnexion !");
-    }
-
-    // tmp, on va appeler un fichier xml par la suite...
-    void get_controllers (ControllerContainer s) {
-	s["home"] = new HomeController;
-    }
-
-    /**
-     On va chercher le SESSID dans la première requete.
-     Si il est présent, on va pouvoir utiliser les variables de sessions
-     Sinon on va créer une instance
-    */
-    void start_routine () {
-	string data = "";
-	int status_recv;
-
-	auto root = XMLoader.root ("../xml-test/test1.xml");
-	writeln (root.toStr ());
-    
-	status_recv = this.recv_request (data);
-	
-	writeln (data);
-    
-	writeln ("Reception...");
-	HttpRequest request = this.toRequest (data);
-	writeln (request);
-	HttpResponse response = new HttpResponse;
-
-	/* Test simple, si on ajoute 'home' a l'url, ca marche, sinon on affiche not found page */
+    // on check si le dev veut utiliser les cookies pour le sessid
+    if (this.config.use_sessid == SessIdState.COOKIE) {
+      HttpParameter[string] cookies = request.cookies();
+      if ("SESSID" in cookies) {
+	this.sessid = cookies["SESSID"].to!string;
+      } else {
+	this.sessid = this.create_sessid ();
+      }
+      response.cookies["SESSID"] = this.sessid;
+    } else if (this.config.use_sessid == SessIdState.URL) {
+      if (this.sessid.length == 0) {
 	HttpUrl url = request.url;
-	string controller_name = "test";
-	if (url.path.length > 0)
-	    controller_name = url.path[0];
-
-	Controller controller = this.container.get!HomeController (controller_name);
-	if (controller is null)
-	    controller = new NotFoundController;
-	controller.unpackRequest (request);
-
-	auto cookies = request.cookies();
-	if (cookies.length > 0) {
-	    if ("SESSID" in cookies) {
-		this.sessid = cookies["SESSID"].to!(char[]);
-	    } else {
-		this.sessid = this.create_sessid ();
-	    }
+	HttpParameter sessid = url.param("SESSID");
+	if (!sessid.isVoid) {
+	  this.sessid = sessid.to!string;
 	} else {
-	    this.sessid = this.create_sessid ();
+	  this.sessid = this.create_sessid ();
 	}
-	// writeln ("Sessid : " ~ this.sessid);
-	response.cookies["SESSID"] = this.sessid;
-	response.addContent (controller.execute ());
-	response.code = HttpResponseCode.OK;
-	response.proto = "HTTP/1.1";
-	response.type = "text/html";
-
-	// writeln ("Envoie de...");
-	this.send_response (response);
-    
-	if (status_recv < 0)
-	    writeln (this.socket.getErrorText());
+      }
     }
+    response.addContent (controller.execute (/*response*/));
+    response.code = HttpResponseCode.OK;
+    response.proto = "HTTP/1.1";
+    response.type = "text/html";
 
-    // va falloir voir ça plus serieusement
-    string create_sessid () {
-	return "1234";
-    }
+    return response;
+  }
 
-    HttpRequest toRequest (string data) {
-	return HttpRequestParser.parser (data);
+  /**
+     Renvoie un nouvel identifiant de session
+  */
+  string create_sessid () {
+    SysTime date = Clock.currTime ();
+    string str = to!string(date.day) ~
+      to!string(date.month) ~
+      to!string(date.hour) ~
+      to!string(date.minute) ~
+      to!string(date.second);
+    ubyte[16] hash = md5Of (str);
+    string sessid = "";
+    foreach (ubyte n ; hash) {
+      sessid ~= to!string(n);
     }
+    return sessid;
+  }
 
-    int recv_request (ref string data) {
-	byte[] total;
-	while (true) {
-	    byte[] buffer;
-	    buffer.length = 256;
-	    auto length = this.socket.receive (buffer);
-	    total ~= buffer;
-	    if (length <= 0) {
-		return cast(int)length;
-	    } else if (length < 256) {
-		data = cast(string)total;
-		return 1;
-	    }
-	}
-    }
+  /**
+     Renvoie un objet de type 'HttpRequest' en fonction des données recues
+  */
+  HttpRequest toRequest (string data) {
+    return HttpRequestParser.parser (data);
+  }
 
-    void send_response (HttpResponse response) {
-	auto error = this.socket.send (response.enpack());
-	if (error == Socket.ERROR) {
-	    writeln ("Error !");
-	    writeln (this.socket.getErrorText());
-	}
+  /**
+     Met à jour le paramètre 'data' avec les données recues
+     Renvoie le nombre d'octets lu, ou bien 0 (client deconnecte) ou bien code d'erreur
+  */
+  int recv_request (ref string data) {
+    byte[] total;
+    while (true) {
+      byte[] buffer;
+      buffer.length = 256;
+      auto length = this.socket.receive (buffer);
+      total ~= buffer;
+      if (length <= 0) {
+	return cast(int)length;
+      } else if (length < 256) {
+	data = cast(string)total;
+	return 1;
+      }
     }
+  }
 
-    private {
-	ControllerContainer container;
-	string sessid;
-	Log log;
-    }
+  /**
+     Envoie requete de reponse au client en fonction du paramètre HttpResponse
+  */
+  void send_response (HttpResponse response) {
+    auto error = this.socket.send (response.enpack());
+    if (error == Socket.ERROR)
+      log.add_err ("Send response : " ~ this.socket.getErrorText());
+  }
+
+  private {
+    ControllerContainer container;
+    Option config;
+    string sessid;
+    Log log;
+    string client_addr;
+  }
 }

@@ -9,9 +9,7 @@ void main (string[] args) {
 
   Option opt = Option.instance;
   try {
-    opt.load_config ();
+    opt.load_config ("test");
     HttpServer!BaseDriver serv = new HttpServer!BaseDriver ([]);
-  } catch (StrutsException e) {
-    // writeln ("test", e);
-  }
+  } catch (StrutsException e) {}
 }
