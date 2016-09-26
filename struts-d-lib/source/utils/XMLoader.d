@@ -8,14 +8,14 @@ import utils.exception;
 struct Location {
     string filename;
     long line;
-    long column;    
+    long column;
 }
 
 class Identifiant {
     string name;
     Identifiant space;
     Location locate;
-    
+
     this (string name, Location locate) {
 	this.name = name;
 	this.locate = locate;
@@ -60,23 +60,25 @@ class Balise {
     this (Identifiant name) {
 	this.name = name;
     }
-    
+
     this (Identifiant name, string [Identifiant] attrs) {
 	this.name = name;
 	this.attrs = attrs;
     }
-    
+
     this (Identifiant name, Array!Balise childs) {
 	this.name = name;
 	this.childs = childs;
     }
-    
+
     this (Identifiant name, string [Identifiant] attrs, Array!Balise childs) {
 	this.name = name;
 	this.attrs = attrs;
 	this.childs = childs;
     }
-    
+
+  string getValue() { return ""; }
+
     Identifiant name;
     string [Identifiant] attrs;
     Array!Balise childs;
@@ -99,12 +101,12 @@ class Balise {
 	}
 	return buf.toString ();
     }
-    
+
 }
 
 class ProcInst : Balise {
     this (Identifiant name, string[Identifiant] attrs) {
-	super (name, attrs);	
+	super (name, attrs);
     }
 }
 
@@ -114,6 +116,10 @@ class Text : Balise {
 	this.content = content;
     }
 
+  override string getValue() {
+    return this.content;
+  }
+
     override string toStr (int nb = 0) {
 	OutBuffer buf = new OutBuffer;
 	buf.write (rightJustify("", nb, ' '));
@@ -122,8 +128,8 @@ class Text : Balise {
 	buf.write ("]");
 	return buf.toString ();
     }
-    
-    string content;    
+
+    string content;
 }
 
 enum XMLTokens : string {
@@ -141,11 +147,11 @@ enum XMLTokens : string {
 }
 
 class XMLoader {
-   
+
     /**
      Analyse lexical du fichier, et retourne la balise de la racine
      Return:
-     la balise racine, 
+     la balise racine,
      (si le fichier possede plusieurs racine, retourne une racine eof avec les autres racine en enfant)
      */
     static Balise root (string filename) {
@@ -163,25 +169,25 @@ class XMLoader {
 		roots.insertBack (readProc (lex));
 	    else throw new XMLSyntaxError (lex, word);
 	}
-	
+
 	if (roots.length == 1) {
 	    return roots[0];
 	} else {
 	    return new Balise (Identifiant.eof, roots);
 	}
-    }        
-    
+    }
+
     private {
 
 	this () {}
-	
+
 	static Balise make_eof () {
 	    return new Balise (Identifiant.eof);
 	}
-	
+
 	/**
 	 Examples:
-	 ----	 
+	 ----
 	    <b>
 	 // ^^^
 	 // ou :
@@ -205,7 +211,7 @@ class XMLoader {
 		    readAttr (file, attrs);
 		}
 	    }
-	    
+
 	    while (true) {
 		auto end = file.getNext (word);
 		if (!end) throw new XMLSyntaxError (file, word);
@@ -223,7 +229,7 @@ class XMLoader {
 		    childs.insertBack (readText (file));
 		}
 	    }
-	    
+
 	}
 
 	/**
@@ -256,7 +262,7 @@ class XMLoader {
 	    file.rewind ();
 	    return new Identifiant (name, space, locate);
 	}
-	
+
 	/**
 	 Examples:
 	 ----
@@ -266,7 +272,7 @@ class XMLoader {
 	static Balise readProc (LexerFile file) {
 	    return make_eof ();
 	}
-	
+
 	/**
 	 Examples:
 	 ----
@@ -301,11 +307,11 @@ class XMLoader {
 		if (!end) throw new XMLSyntaxError (file, word);
 		if (word.str == XMLTokens.QUOT) {
 		    file.setSkip (make!(Array!string)(" ", "\n", "\r"));
-		    return (total);		
+		    return (total);
 		} else {
 		    if (word.str == "\n" || word.str == "\r") total ~= " ";
 		    else total ~= word.str;
-		}		    
+		}
 	    }
 	}
 
@@ -330,11 +336,11 @@ class XMLoader {
 		} else {
 		    if (word.str == "\n" || word.str == "\r") total ~= " ";
 		    else total ~= word.str;
-		}		    
+		}
 	    }
 	}
 
     }
-    
-    
+
+
 }

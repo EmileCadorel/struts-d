@@ -2,7 +2,9 @@ module utils.exception;
 public import utils.exceptionmod.NoSuchFile;
 public import utils.exceptionmod.ReqSyntaxException;
 public import utils.exceptionmod.XMLSyntaxError;
-
+public import utils.exceptionmod.ConfigFile;
+public import utils.exceptionmod.Server;
+import utils.Log;
 
 class StrutsException : Exception {
 
@@ -12,7 +14,11 @@ class StrutsException : Exception {
     string GREEN = "\u001B[42m";
 
     this (string msg) {
+      Log.instance.add_err (msg);
 	super (msg);
     }
 
+  override string toString() {
+    return super.msg;
+  }
 }
