@@ -74,7 +74,7 @@ class HttpRequest {
 	return this._post_values;
     }
     
-    ref string[string] cookies () {
+    ref HttpParameter [string] cookies () {
 	return this._cookies;
     }
 
@@ -89,15 +89,9 @@ class HttpRequest {
 	buf.write ("FILE_FORMAT : " ~ to!string (_file_accepted) ~ "\n");
 	buf.write ("ENCODING : " ~ to!string(_encoding) ~ "\n");
 	buf.write ("CONNECTION : " ~ _connection ~ "\n");
-	buf.write ("POST_VALUES : ");
-	buf.write ("[");
-	foreach (key, value ; _post_values) {
-	    buf.write (key);
-	    buf.write (" ~> ");
-	    buf.write (value.toString ());
-	    buf.write (", ");
-	}
-	buf.write ("]\n");
+	buf.write ("POST_VALUES : " ~ to!string (_post_values) ~ "\n");
+	buf.write ("COOKIES : " ~ to!string (_cookies) ~ "\n");
+	
 	return buf.toString;
     }
     
@@ -116,6 +110,6 @@ class HttpRequest {
 	string _cache_control;
 	
 	HttpParameter [string] _post_values;
-	string [string] _cookies;
+	HttpParameter [string] _cookies;
     }
 }

@@ -1,6 +1,6 @@
 <xl:salut>
   Salut comment ca va
-  <a>
+  <a attr="salut<10">
     <b>
       Hehe
     </b>

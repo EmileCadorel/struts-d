@@ -73,10 +73,10 @@ class BaseDriver : HttpSession {
 	    controller = new NotFoundController;
 	controller.unpackRequest (request);
 
-	string[string] cookies = request.cookies();
+	auto cookies = request.cookies();
 	if (cookies.length > 0) {
 	    if ("SESSID" in cookies) {
-		this.sessid = cookies["SESSID"];
+		this.sessid = cookies["SESSID"].to!(char[]);
 	    } else {
 		this.sessid = this.create_sessid ();
 	    }

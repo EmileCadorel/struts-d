@@ -8,7 +8,8 @@ import http.request;
 import utils.exception;
 
 enum HttpRequestTokens : string {
-    SEMI_COLON = ":",
+    COLON = ":",
+	SEMI_COLON = ";",
 	COMA = ",",
 	SLASH = "/",
 	QUES_MARK = "?",
@@ -20,7 +21,7 @@ class HttpRequestParser {
     
     static HttpRequest parser (string data) {
 	LexerString lexer = new LexerString (data);
-	lexer.setKeys (make!(Array!string)(":", ",", "/", "?", "#", "=", "&", " ", "\n", "\r"));
+	lexer.setKeys (make!(Array!string)(":", ",", "/", "?", "#", "=", "&", " ", "\n", "\r", ";"));
 	lexer.setSkip (make!(Array!string)(" ", "\r", "\n"));
 	Word begin;
 	HttpRequest ret = new HttpRequest;
@@ -47,14 +48,40 @@ class HttpRequestParser {
 		parse_cache_control (lexer, ret);
 	    else if (begin.str == "Content-Length") 
 		parse_post_values (lexer, ret);
-	    
+	    else if (begin.str == "Cookie")
+		parse_cookies (lexer, ret);
 	}
 	return ret;
     }
 
+    static void parse_cookies (LexerString file, ref HttpRequest req) {
+	Word word;
+	if (!file.getNext (word) || word.str != HttpRequestTokens.COLON) 
+	    throw new ReqSyntaxError (word);
+	while (true) {
+	    if(!file.getNext (word)) break;
+	    else {
+		string key = word.str;
+		if(!file.getNext (word))
+		    throw new ReqSyntaxError (word);
+		else if (word.str != HttpRequestTokens.EQUAL) {
+		    file.rewind ();
+		    req.cookies[key] = HttpParameter.empty;
+		} else {		    
+		    req.cookies [key] = parse_value (file, HttpRequestTokens.SEMI_COLON);
+		}
+		if (!file.getNext (word)) break;
+		else if (word.str != HttpRequestTokens.SEMI_COLON) {
+		    file.rewind ();
+		    break;
+		}
+	    }
+	}
+    }
+        
     static void parse_cache_control (LexerString file, ref HttpRequest req) {
 	Word word;
-	if(!file.getNext (word) || word.str != HttpRequestTokens.SEMI_COLON)
+	if(!file.getNext (word) || word.str != HttpRequestTokens.COLON)
 	    throw new ReqSyntaxError (word);
 	file.setSkip (make!(Array!string)());
 	string total;
@@ -71,7 +98,7 @@ class HttpRequestParser {
     
     static void parse_referer (LexerString file, ref HttpRequest req) {
 	Word word;
-	if(!file.getNext (word) || word.str != HttpRequestTokens.SEMI_COLON)
+	if(!file.getNext (word) || word.str != HttpRequestTokens.COLON)
 	    throw new ReqSyntaxError (word);
 	file.setSkip (make!(Array!string)());
 	string total;
@@ -149,7 +176,7 @@ class HttpRequestParser {
 
     static void parse_post_values (LexerString file, HttpRequest req) {
 	Word word;	
-	if (!file.getNext (word) || word.str != HttpRequestTokens.SEMI_COLON)
+	if (!file.getNext (word) || word.str != HttpRequestTokens.COLON)
 	    throw new ReqSyntaxError (word);
 	auto size = parse_value (file);	
 	while (true) {	    
@@ -166,10 +193,10 @@ class HttpRequestParser {
     }
 
     
-    static HttpParameter parse_value (LexerString file) {
+    static HttpParameter parse_value (LexerString file, HttpRequestTokens bre = HttpRequestTokens.AND) {
 	Word word;
 	file.getNext (word);
-	if (word.str == " " || word.str == HttpRequestTokens.AND) {
+	if (word.str == " " || word.str == bre) {
 	    file.rewind ();
 	    return HttpParameter.empty;
 	}

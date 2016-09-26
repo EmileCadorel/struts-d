@@ -12,10 +12,18 @@ struct HttpParameter {
     HttpParamEnum type;
     void [] data;
 		
+    T[] to (T : T[]) () {
+	return (cast(T[])this.data);
+    }
+
+    T to (T : string) () {
+	return (cast(char[])this.data);
+    }
+
     ref T to (T) () {
 	return (cast(T[])this.data)[0];
     }
-
+    
     static ref HttpParameter empty () {
 	return _empty;
     }
