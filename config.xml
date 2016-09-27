@@ -1,0 +1,11 @@
+<config>
+  <controllers>
+    <controller>
+      <name>home</name>
+      <class>control.ControllerContainer.HomeController</class>
+    </controller>
+  </controllers>
+  <general>
+    <use_sessid>COOKIE</use_sessid>
+  </general>
+</config>
