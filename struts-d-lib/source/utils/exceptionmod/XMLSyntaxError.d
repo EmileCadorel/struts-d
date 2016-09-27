@@ -5,18 +5,12 @@ import std.outbuffer, std.conv;
 
 
 class XMLSyntaxError : StrutsException {
-    
-    string RESET = "\u001B[0m";
-    string PURPLE = "\u001B[46m";
-    string RED = "\u001B[41m";
-    string GREEN = "\u001B[42m";
 
     this (LexerFile file, Word word) {
 	super ("");
 	OutBuffer buf = new OutBuffer();
 	string line;
-	buf.write (RED);
-	buf.write ("Erreur de syntaxe " ~ RESET ~ ":");
+	buf.write ("Erreur de syntaxe :");
 	buf.write (file.getFileName());
 	buf.write (":(" ~ to!string(word.line) ~ ", " ~ to!string(word.column) ~ ") : ");
 	buf.write ("'" ~ word.str ~ "'\n");
@@ -25,11 +19,9 @@ class XMLSyntaxError : StrutsException {
 	} else {
 	    int j = 0;
 	    for(; j < word.column - 1 && j < line.length; j++) buf.write (line[j]);
-	    buf.write(GREEN);
 	    for(; j < word.str.length + word.column - 1  && j < line.length; j++) buf.write (line[j]);
-	    buf.write (RESET);
 	    for(; j < line.length; j++) buf.write (line[j]);
-	    
+
 	    for(int i = 0; i < word.column - 1 && i < line.length; i++) {
 		if (line [i] == '\t') buf.write ('\t');
 		else buf.write (" ");
@@ -39,5 +31,5 @@ class XMLSyntaxError : StrutsException {
 	}
 	msg = buf.toString();
     }
-    
+
 }

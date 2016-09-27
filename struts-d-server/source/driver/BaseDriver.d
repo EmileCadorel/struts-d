@@ -10,6 +10,7 @@ import utils.Log;
 import control.Controller;
 import control.NotFoundController;
 import control.ControllerContainer;
+import control.SessionController;
 import utils.XMLoader;
 import utils.Option;
 
@@ -55,7 +56,7 @@ class BaseDriver : HttpSession {
     int status_recv = this.recv_request (data);
 
     if (status_recv < 0) {
-      log.add_err (this.socket.getErrorText());
+      log.add_err ("Erreur recv_request : " ~ this.socket.getErrorText());
     } else {
       HttpRequest request = this.toRequest (data);
       log.add_info (this.client_addr ~ " : " ~ to!string(request.http_method) ~ " " ~ request.url.toString());
@@ -85,28 +86,30 @@ class BaseDriver : HttpSession {
   */
   HttpResponse build_response (HttpRequest request, Controller controller) {
     HttpResponse response = new HttpResponse;
-    controller.unpackRequest (request);
 
     // on check si le dev veut utiliser les cookies pour le sessid
+    string sessid = "";
     if (this.config.use_sessid == SessIdState.COOKIE) {
       HttpParameter[string] cookies = request.cookies();
       if ("SESSID" in cookies) {
-	this.sessid = cookies["SESSID"].to!string;
+	sessid = cookies["SESSID"].to!string;
       } else {
-	this.sessid = this.create_sessid ();
+	sessid = this.create_sessid ();
       }
-      response.cookies["SESSID"] = this.sessid;
+      response.cookies["SESSID"] = sessid;
+      SessionController.instance.load_session (sessid);
     } else if (this.config.use_sessid == SessIdState.URL) {
-      if (this.sessid.length == 0) {
-	HttpUrl url = request.url;
-	HttpParameter sessid = url.param("SESSID");
-	if (!sessid.isVoid) {
-	  this.sessid = sessid.to!string;
-	} else {
-	  this.sessid = this.create_sessid ();
-	}
+      HttpUrl url = request.url;
+      HttpParameter sess_id = url.param("SESSID");
+      if (!sess_id.isVoid) {
+	sessid = sess_id.to!string;
+      } else {
+	sessid = this.create_sessid ();
       }
+      SessionController.instance.load_session (sessid);
     }
+
+    controller.init (request, sessid);
     response.addContent (controller.execute (/*response*/));
     response.code = HttpResponseCode.OK;
     response.proto = "HTTP/1.1";
@@ -172,7 +175,6 @@ class BaseDriver : HttpSession {
   private {
     ControllerContainer container;
     Option config;
-    string sessid;
     Log log;
     string client_addr;
   }

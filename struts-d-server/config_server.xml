@@ -1,3 +1,4 @@
 <config>
+  <debug_mode>true</debug_mode>
   <use_sessid>COOKIE</use_sessid>
 </config>

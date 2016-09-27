@@ -8,11 +8,6 @@ import utils.Log;
 
 class StrutsException : Exception {
 
-    string RESET = "\u001B[0m";
-    string PURPLE = "\u001B[46m";
-    string RED = "\u001B[41m";
-    string GREEN = "\u001B[42m";
-
     this (string msg) {
       Log.instance.add_err (msg);
 	super (msg);
