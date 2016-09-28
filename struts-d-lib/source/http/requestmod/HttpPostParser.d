@@ -8,7 +8,7 @@ class HttpPostParser {
 
     static HttpPost parse (string data, string boundary) {
 	LexerString lexer = new LexerString (data);
-	lexer.setKeys (make!(Array!string)(":", ",", "?", "#", "=", "&", " ", "\n", "\r", ";"));
+	lexer.setKeys (make!(Array!string)(":", ",", "?", "#", "=", "&", " ", "\n", "\r", ";", "\""));
 	lexer.setSkip (make!(Array!string)(" ", "\r", "\n"));
 	Word begin;
 	HttpPost ret = new HttpPost;
@@ -30,7 +30,7 @@ class HttpPostParser {
 	while (true) {
 	    if (!file.getNext (word)) throw new ReqSyntaxError (word);
 	    word.str = toUpper (word.str);
-	    if (word.str == "CONTENT_DISPOSITION") {
+	    if (word.str == "CONTENT-DISPOSITION") {
 		parse_content_disposition (file, h_file);
 	    } else if (word.str == "CONTENT-TYPE") {
 		parse_content_type (file, h_file);
@@ -44,10 +44,12 @@ class HttpPostParser {
 
     static void parse_content_disposition (LexerString file, ref HttpFile post) {
 	Word word;
-	if (!file.getNext (word) || word.str != HttpRequestTokens.COLON)
+	if (!file.getNext (word) || word.str != HttpRequestTokens.COLON)	    
 	    throw new ReqSyntaxError (word);
+	file.setSkip (make!(Array!string) ());
+	file.addSkip (" ");
 	while (true) {
-	    if(!file.getNext (word)) break;
+	    if(!file.getNext (word)) break;	    
 	    else {
 		string key = word.str;
 		if(!file.getNext (word))
@@ -57,14 +59,17 @@ class HttpPostParser {
 		    post.content_disp [key] = HttpParameter.empty;
 		} else {		    
 		    post.content_disp [key] = parse_value_with_quot (file);
+		    file.setSkip (make!(Array!string) ());
+		    file.addSkip (" ");
 		}
 		if (!file.getNext (word)) break;
 		else if (word.str != HttpRequestTokens.SEMI_COLON) {
 		    file.rewind ();
 		    break;
-		}
+		} 
 	    }
 	}
+	file.setSkip (make!(Array!string) (" ", "\n", "\r"));
     }
 
     static void parse_content_type (LexerString file, ref HttpFile post) {
@@ -105,7 +110,6 @@ class HttpPostParser {
     static void parse_to_bound (LexerString file, ref HttpFile post, string bound) {
 	Word word;
 	file.setSkip (make!(Array!string) ());
-	parse_suite (file, "\n\r\n\r".dup);
 	byte[] total;
 	while (true) {
 	    if(!file.getNext (word)) throw new ReqSyntaxError (word);
@@ -118,6 +122,7 @@ class HttpPostParser {
 		}
 	    }
 	}
+	post.content = cast(byte[])total;
 	file.setSkip (make!(Array!string) (" ", "\n", "\r"));
     }
         
@@ -125,7 +130,7 @@ class HttpPostParser {
 	Word word;	
 	if(!file.getNext (word) || word.str != "\"")
 	    throw new ReqSyntaxError (word);
-	file.setSkip (make!(Array!string)());
+	file.setSkip (make!(Array!string) ());
 	string total;
 	while (true) {
 	    if (!file.getNext (word)) throw new ReqSyntaxError (word);
@@ -134,7 +139,7 @@ class HttpPostParser {
 		else total ~= word.str;
 	    }
 	}
-	file.setSkip (make!(Array!string)(" ", "\n", "\r"));
+	file.setSkip (make!(Array!string) (" ", "\n", "\r"));
 	return HttpParameter (HttpParamEnum.STRING, total.dup);
     }
 

@@ -211,7 +211,6 @@ class HttpRequestParser {
 	    throw new ReqSyntaxError (word);
 	auto size = parse_value (lexer);       	
 	auto datas = lexer.getBytes (size.to!int + 4);
-	writeln (datas);
 	auto it = ("boundary" in req.content_type);
 	if (it !is null)
 	    req.post_value = HttpPostParser.parse (to!string (datas), it.to!string);

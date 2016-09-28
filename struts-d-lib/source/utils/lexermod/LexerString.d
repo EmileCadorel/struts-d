@@ -89,7 +89,6 @@ class LexerString {
 
     void rewind(int nb = 1) {
 	currentWord -= nb;
-	writeln ("rewind:", currentWord);
     }
 
     char [] getBytes (int size) {

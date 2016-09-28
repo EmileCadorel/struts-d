@@ -21,14 +21,17 @@ class HttpFile {
 	return this._content_disp;
     }
 
+    ref byte[] content () {
+	return this._content;
+    }
+    
     override string toString () {
 	OutBuffer buf = new OutBuffer;
 	buf.write ("NAME : " ~ _name ~ "\n");
 	buf.write ("FILENAME : " ~ _filename ~ "\n");
 	buf.write ("CONTENT_TYPE : " ~ to!string(_content_type) ~ "\n");
 	buf.write ("CONTENT_DISP : " ~ to!string(_content_disp) ~ "\n");
-	buf.write ("CONTENT_DISP : " ~ to!string(_content_disp) ~ "\n");
-	buf.write ("CONTENT : " ~ to!string (_content) ~ "\n");
+	buf.write ("CONTENT : " ~ to!string (cast(string)_content) ~ "\n");
 	return buf.toString ();
     }
     
