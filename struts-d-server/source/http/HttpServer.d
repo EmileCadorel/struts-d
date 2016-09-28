@@ -2,7 +2,6 @@ module http.HttpServer;
 import std.container;
 import std.socket;
 import http.HttpSession;
-import control.Session;
 
 class HttpServer (T : HttpSession) {
 
@@ -43,16 +42,16 @@ class HttpServer (T : HttpSession) {
 
   }
 
-  static Session getSessions() {
-    return sessions;
-  }
+  // static SessionController getSessions() {
+  //   return sessions;
+  // }
 
   private {
     ushort nb_stack = 1;
     ushort port = 8080;
     Socket socket;
     SList!T view_states;
-    static Session sessions;
+    // static SessionController sessions;
     bool end = false;
   }
 

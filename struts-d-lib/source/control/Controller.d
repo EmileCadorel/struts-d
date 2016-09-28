@@ -18,7 +18,7 @@ class ControllerTable {
 
     mixin Singleton!ControllerTable;
     private {
-	static ControllerAncestor[string] _global;	
+	static ControllerAncestor[string] _global;
     }
 }
 
@@ -34,11 +34,12 @@ abstract class ControllerAncestor {
      Unpack la request et rempli les attributs du controller en consequence
     */
     void unpackRequest (HttpRequest request) {
+      this._request = request;
     }
 
     abstract string execute ();
 
-    
+
     HttpParameter get (string key) {
 	return this._request.url.param(key);
     }
@@ -58,7 +59,7 @@ abstract class ControllerAncestor {
     private {
 	HttpRequest _request;
     }
-    
+
 }
 
 abstract class Controller (T) : ControllerAncestor {

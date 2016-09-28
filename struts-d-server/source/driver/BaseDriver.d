@@ -13,9 +13,6 @@ import control.ControllerContainer;
 import utils.XMLoader;
 import utils.Option;
 
-// Pour le test
-import HomeController;
-
 /**
    Driver de base pour ce serveur web
    Prend en charge les sessions:
@@ -35,19 +32,11 @@ class BaseDriver : HttpSession {
     this.client_addr = addr.toAddrString();
     log.add_info ("Connexion de " ~ this.client_addr);
 
-    // tmp
-    this.get_controllers (container);
-
     this.start_routine ();
   }
 
   void on_end () {
     log.add_info ("Deconnexion de " ~ this.client_addr);
-  }
-
-  // tmp, on va appeler un fichier xml par la suite...
-  void get_controllers (ControllerContainer s) {
-    s["home"] = new HomeController;
   }
 
   void start_routine () {
@@ -70,10 +59,13 @@ class BaseDriver : HttpSession {
 	controller_name = "";
       }
 
-      Controller controller = this.container.get!Controller (controller_name);
+      ControllerAncestor controller = ControllerTable.instance[controller_name];
       if (controller is null) {
-	controller = new NotFoundController;
+	controller = ControllerTable.instance["control.NotFoundController.NotFoundController"];
       }
+
+      import std.stdio; writeln("driver, taille : ", ControllerTable.instance.getSize);
+      ControllerTable.instance.show ();
 
       HttpResponse response = this.build_response (request, controller);
       this.send_response (response);
@@ -83,30 +75,31 @@ class BaseDriver : HttpSession {
   /**
      Renvoie une reponse (HttpResponse) en fonction de la requete et du controlleur
   */
-  HttpResponse build_response (HttpRequest request, Controller controller) {
+  HttpResponse build_response (HttpRequest request, ControllerAncestor controller) {
+    import std.stdio; writeln("request : ", request);
     HttpResponse response = new HttpResponse;
-    controller.unpackRequest (request);
+    // controller.unpackRequest (request);
 
-    // on check si le dev veut utiliser les cookies pour le sessid
-    if (this.config.use_sessid == SessIdState.COOKIE) {
-      HttpParameter[string] cookies = request.cookies();
-      if ("SESSID" in cookies) {
-	this.sessid = cookies["SESSID"].to!string;
-      } else {
-	this.sessid = this.create_sessid ();
-      }
-      response.cookies["SESSID"] = this.sessid;
-    } else if (this.config.use_sessid == SessIdState.URL) {
-      if (this.sessid.length == 0) {
-	HttpUrl url = request.url;
-	HttpParameter sessid = url.param("SESSID");
-	if (!sessid.isVoid) {
-	  this.sessid = sessid.to!string;
-	} else {
-	  this.sessid = this.create_sessid ();
-	}
-      }
-    }
+    // // on check si le dev veut utiliser les cookies pour le sessid
+    // if (this.config.use_sessid == SessIdState.COOKIE) {
+    //   HttpParameter[string] cookies = request.cookies();
+    //   if ("SESSID" in cookies) {
+    // 	this.sessid = cookies["SESSID"].to!string;
+    //   } else {
+    // 	this.sessid = this.create_sessid ();
+    //   }
+    //   response.cookies["SESSID"] = this.sessid;
+    // } else if (this.config.use_sessid == SessIdState.URL) {
+    //   if (this.sessid.length == 0) {
+    // 	HttpUrl url = request.url;
+    // 	HttpParameter sessid = url.param("SESSID");
+    // 	if (!sessid.isVoid) {
+    // 	  this.sessid = sessid.to!string;
+    // 	} else {
+    // 	  this.sessid = this.create_sessid ();
+    // 	}
+    //   }
+    // }
     response.addContent (controller.execute (/*response*/));
     response.code = HttpResponseCode.OK;
     response.proto = "HTTP/1.1";
