@@ -211,8 +211,11 @@ class HttpRequestParser {
 	    throw new ReqSyntaxError (word);
 	auto size = parse_value (lexer);       	
 	auto datas = lexer.getBytes (size.to!int + 4);
-	writeln (datas);
-	req.post_value = HttpPostParser.parse (to!string (datas), req.content_type ["boundary"].to!string);
+	auto it = ("boundary" in req.content_type);
+	if (it !is null)
+	    req.post_value = HttpPostParser.parse (to!string (datas), it.to!string);
+	else
+	    req.post_value = HttpPostParser.parse (to!string (datas), null);
     }
 
     

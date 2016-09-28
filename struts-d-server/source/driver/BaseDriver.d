@@ -68,7 +68,6 @@ class BaseDriver : HttpSession {
       this.send_response (response);
     }
   }
-
   /**
      Renvoie une reponse (HttpResponse) en fonction de la requete et du controlleur
   */
@@ -80,23 +79,29 @@ class BaseDriver : HttpSession {
     if (this.config.use_sessid == SessIdState.COOKIE) {
       HttpParameter[string] cookies = request.cookies();
       if ("SESSID" in cookies) {
-    	this.sessid = cookies["SESSID"].to!string;
+	this.sessid = cookies["SESSID"].to!string;
       } else {
-    	this.sessid = this.create_sessid ();
+	this.sessid = this.create_sessid ();
       }
       response.cookies["SESSID"] = this.sessid;
     } else if (this.config.use_sessid == SessIdState.URL) {
       if (this.sessid.length == 0) {
-    	HttpUrl url = request.url;
-    	HttpParameter sessid = url.param("SESSID");
-    	if (!sessid.isVoid) {
-    	  this.sessid = sessid.to!string;
-    	} else {
-    	  this.sessid = this.create_sessid ();
-    	}
+	HttpUrl url = request.url;
+	HttpParameter sessid = url.param("SESSID");
+	if (!sessid.isVoid) {
+	  this.sessid = sessid.to!string;
+	} else {
+	  this.sessid = this.create_sessid ();
+	}
       }
     }
-    response.addContent (controller.execute (/*response*/));
+    // string content = "<h1 align=\"center\">Home ! </h1>
+    //     <form method=\"post\" enctype=\"multipart/form-data\">
+    //     <input type=\"text\" name=\"nom1\"/>
+    //     <input type=\"file\" name=\"nom_3\" enctype=\"text\"/>
+    //     <input type=\"submit\" value=\"send\">
+    //     </form>";
+    response.addContent (controller.execute());
     response.code = HttpResponseCode.OK;
     response.proto = "HTTP/1.1";
     response.type = "text/html";
