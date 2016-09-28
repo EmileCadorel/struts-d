@@ -33,7 +33,7 @@ class LexerString {
 
     bool getNext(ref Word ret) {
 	Word word;
-	if(this.currentWord >= read.length() - 1) {
+	if(this.currentWord >= (cast(int)read.length()) - 1) {
 	    do {
 		word.reset();
 		if(!getWord (word)) { word.str = ""; break; }
@@ -89,6 +89,7 @@ class LexerString {
 
     void rewind(int nb = 1) {
 	currentWord -= nb;
+	writeln ("rewind:", currentWord);
     }
 
     char [] getBytes (int size) {

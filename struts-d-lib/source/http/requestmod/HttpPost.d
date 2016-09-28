@@ -1,6 +1,7 @@
 module http.requestmod.HttpPost;
 import http.requestmod.HttpParameter;
 import http.requestmod.HttpFile;
+import std.outbuffer, std.conv;
 
 class HttpPost {
 
@@ -12,14 +13,16 @@ class HttpPost {
 	return this._files;
     }
 
-    ref HttpParameter [string] content_disp () {
-	return this._content_disp;
+    override string toString () {
+	OutBuffer buf = new OutBuffer;
+	buf.write ("PARAMETERS : " ~ to!string (_params) ~ "\n");
+	buf.write ("FILES : "~ to!string (_files) ~ "\n");
+	return buf.toString ();
     }
     
     private {
 	
 	HttpParameter [string] _params;
-	HttpParameter [string] _content_disp;
 	HttpFile [] _files;
 	
     }
