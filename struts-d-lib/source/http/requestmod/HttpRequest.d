@@ -33,7 +33,7 @@ class HttpRequest {
     ref string proto() {
 	return this._proto;
     }
-    
+
     ref string host_addr () {
 	return this._host_addr;
     }
@@ -41,11 +41,11 @@ class HttpRequest {
     ref string host_port () {
 	return this._host_port;
     }
-    
+
     ref string [] languages () {
 	return this._language;
     }
-    
+
     ref string user_agent () {
 	return this._user_agent;
     }
@@ -57,7 +57,7 @@ class HttpRequest {
     ref string [] encoding () {
 	return this._encoding;
     }
-    
+
     ref string [] file_accepted () {
 	return this._file_accepted;
     }
@@ -77,7 +77,7 @@ class HttpRequest {
     ref HttpPost post_value () {
 	return this._post_value;
     }
-    
+
     ref HttpParameter [string] cookies () {
 	return this._cookies;
     }
@@ -96,10 +96,9 @@ class HttpRequest {
 	buf.write ("POST_VALUES : " ~ to!string (_post_value) ~ "\n");
 	buf.write ("COOKIES : " ~ to!string (_cookies) ~ "\n");
 	buf.write ("CONTENT_TYPE : " ~ to!string (_content_type) ~ "\n");
-	
 	return buf.toString;
     }
-    
+
     private {
 	HttpMethod type;
 	HttpUrl _url;
@@ -113,9 +112,8 @@ class HttpRequest {
 	string _connection;
 	string _referer;
 	string _cache_control;
-	
-	HttpParameter [string] _content_type;	
 	HttpPost _post_value;
+	HttpParameter [string] _content_type;	
 	HttpParameter [string] _cookies;
     }
 }

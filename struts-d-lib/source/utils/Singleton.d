@@ -6,6 +6,5 @@ mixin template Singleton (T) {
     return inst;
   }
 private:
-  this () {}
   static T inst = null;
 }

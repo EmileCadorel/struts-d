@@ -12,7 +12,7 @@ class HttpUrl {
 	this._path = path;
 	this._params = params;
     }
-    
+
     ref Array!string path () {
 	return this._path;
     }
@@ -33,7 +33,7 @@ class HttpUrl {
 	buf.write ("?" ~ to!string (_params));
 	return buf.toString ();
     }
-    
+
     private {
 	Array!string _path;
 	HttpParameter [string] _params;

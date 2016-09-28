@@ -4,6 +4,7 @@ import utils.Singleton;
 
 class ControllerTable {
 
+
     void insert (string name, ControllerAncestor control) {
 	//TODO throw exception, multiple definition
 	_global [name] = control;
@@ -27,16 +28,36 @@ template ControlInsert (T : ControllerAncestor) {
     }
 }
 
-
 abstract class ControllerAncestor {
 
     /**
      Unpack la request et rempli les attributs du controller en consequence
-     */
+    */
     void unpackRequest (HttpRequest request) {
     }
 
     abstract string execute ();
+
+    
+    HttpParameter get (string key) {
+	return this._request.url.param(key);
+    }
+
+    HttpParameter post (string key) {
+	return this._request.post_value.params[key];
+    }
+
+    HttpParameter cookie (string key) {
+	return this._request.cookies()[key];
+    }
+
+    ref HttpRequest request () {
+	return this._request;
+    }
+
+    private {
+	HttpRequest _request;
+    }
     
 }
 
