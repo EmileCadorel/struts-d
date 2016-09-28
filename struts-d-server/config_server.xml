@@ -1,3 +1,16 @@
 <config>
-  <use_sessid>COOKIE</use_sessid>
+  <general>
+    <debug_mode>true</debug_mode>
+    <use_sessid>COOKIE</use_sessid>
+  </general>
+  <controllers>
+    <controller>
+      <name>NotFound</name>
+      <class>control.NotFoundController.NotFoundController</class>
+    </controller>
+    <controller>
+      <name>home</name>
+      <class>example.HomeController.HomeController</class>
+    </controller>
+  </controllers>
 </config>

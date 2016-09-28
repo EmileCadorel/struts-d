@@ -23,8 +23,8 @@ import utils.Option;
 class BaseDriver : HttpSession {
   this (Socket socket) {
     super (socket);
-    container = new ControllerContainer;
     config = Option.instance;
+    controllers = config.controllers;
     log = Log.instance;
   }
 
@@ -59,13 +59,10 @@ class BaseDriver : HttpSession {
 	controller_name = "";
       }
 
-      ControllerAncestor controller = ControllerTable.instance[controller_name];
+      ControllerAncestor controller = ControllerTable.instance[this.controllers[controller_name]];
       if (controller is null) {
-	controller = ControllerTable.instance["control.NotFoundController.NotFoundController"];
+	controller = ControllerTable.instance[this.controllers["NotFound"]];
       }
-
-      import std.stdio; writeln("driver, taille : ", ControllerTable.instance.getSize);
-      ControllerTable.instance.show ();
 
       HttpResponse response = this.build_response (request, controller);
       this.send_response (response);
@@ -76,30 +73,29 @@ class BaseDriver : HttpSession {
      Renvoie une reponse (HttpResponse) en fonction de la requete et du controlleur
   */
   HttpResponse build_response (HttpRequest request, ControllerAncestor controller) {
-    import std.stdio; writeln("request : ", request);
     HttpResponse response = new HttpResponse;
-    // controller.unpackRequest (request);
+    controller.unpackRequest (request);
 
-    // // on check si le dev veut utiliser les cookies pour le sessid
-    // if (this.config.use_sessid == SessIdState.COOKIE) {
-    //   HttpParameter[string] cookies = request.cookies();
-    //   if ("SESSID" in cookies) {
-    // 	this.sessid = cookies["SESSID"].to!string;
-    //   } else {
-    // 	this.sessid = this.create_sessid ();
-    //   }
-    //   response.cookies["SESSID"] = this.sessid;
-    // } else if (this.config.use_sessid == SessIdState.URL) {
-    //   if (this.sessid.length == 0) {
-    // 	HttpUrl url = request.url;
-    // 	HttpParameter sessid = url.param("SESSID");
-    // 	if (!sessid.isVoid) {
-    // 	  this.sessid = sessid.to!string;
-    // 	} else {
-    // 	  this.sessid = this.create_sessid ();
-    // 	}
-    //   }
-    // }
+    // on check si le dev veut utiliser les cookies pour le sessid
+    if (this.config.use_sessid == SessIdState.COOKIE) {
+      HttpParameter[string] cookies = request.cookies();
+      if ("SESSID" in cookies) {
+    	this.sessid = cookies["SESSID"].to!string;
+      } else {
+    	this.sessid = this.create_sessid ();
+      }
+      response.cookies["SESSID"] = this.sessid;
+    } else if (this.config.use_sessid == SessIdState.URL) {
+      if (this.sessid.length == 0) {
+    	HttpUrl url = request.url;
+    	HttpParameter sessid = url.param("SESSID");
+    	if (!sessid.isVoid) {
+    	  this.sessid = sessid.to!string;
+    	} else {
+    	  this.sessid = this.create_sessid ();
+    	}
+      }
+    }
     response.addContent (controller.execute (/*response*/));
     response.code = HttpResponseCode.OK;
     response.proto = "HTTP/1.1";
@@ -163,7 +159,7 @@ class BaseDriver : HttpSession {
   }
 
   private {
-    ControllerContainer container;
+    ControllerContainer controllers;
     Option config;
     string sessid;
     Log log;

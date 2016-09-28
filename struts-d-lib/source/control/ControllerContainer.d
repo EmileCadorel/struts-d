@@ -1,30 +1,23 @@
 module control.ControllerContainer;
-
+import control.Controller;
+import utils.Option;
+import utils.XMLoader;
 
 class ControllerContainer {
 
-    void opIndexAssign (T : Object) (T elem, string name) {
-	datas[name] = cast(void*)elem;
-    }
+  string opIndex (string name) {
+    auto it = name in this._controllers;
+    if (it !is null) return *it;
+    else return null;
+  }
 
-    void opIndexAssign (T) (T * elem, string name) {
-	datas[name] = elem;
-    }
+  void opIndexAssign (string value, string name) {
+    this._controllers[name] = value;
+  }
 
-    T get (T : Object) (string name) {
-	auto elem = (name in datas);
-	if (elem is null) return null;
-	else return cast (T) (*elem);
-    }
+  ref string [string] controllers () { return this._controllers; }
 
-    T * get (T) (string name) {
-	auto elem = (name in datas);
-	if (elem is null) return null;
-	else return cast (T*) (*elem);
-    }
-
-    private {
-	void* [string] datas;
-    }
-
+  private  {
+    string [string] _controllers;
+  }
 }

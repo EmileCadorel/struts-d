@@ -4,6 +4,6 @@ import utils.lexer;
 
 class ReqSyntaxError : StrutsException {
     this (Word word) {
-	super ("Erreur de syntaxe " ~ word.str);
-    }   
+	super ("Syntaxe : " ~ word.str);
+    }
 }
