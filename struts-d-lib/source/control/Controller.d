@@ -1,9 +1,34 @@
 module control.Controller;
 import http.request;
+import utils.Singleton;
 
-abstract class Controller {
+class ControllerTable {
 
-    this () {}
+    void insert (string name, ControllerAncestor control) {
+	//TODO throw exception, multiple definition
+	_global [name] = control;
+    }
+
+    ControllerAncestor opIndex (string name) {
+	auto it = name in _global;
+	if (it !is null) return *it;
+	else return null;
+    }
+
+    mixin Singleton!ControllerTable;
+    private {
+	static ControllerAncestor[string] _global;	
+    }
+}
+
+template ControlInsert (T : ControllerAncestor) {
+    static this () {
+	ControllerTable.instance.insert (T.classinfo.name, new T);
+    }
+}
+
+
+abstract class ControllerAncestor {
 
     /**
      Unpack la request et rempli les attributs du controller en consequence
@@ -13,6 +38,8 @@ abstract class Controller {
 
     abstract string execute ();
     
-    ~this () {}
-    
+}
+
+abstract class Controller (T) : ControllerAncestor {
+    mixin ControlInsert!T;
 }

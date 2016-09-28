@@ -68,6 +68,7 @@ class LexerString {
 	commentsOn = on;
     }
 
+    
     void removeSkip (string which) {
 	auto aux = skip[];
 	skip.clear();
@@ -77,11 +78,25 @@ class LexerString {
 	}
     }
 
+    void removeKey (string which) {
+	auto aux = keys[];
+	keys.clear();
+	foreach (string elem ; aux) {
+	    if (elem != which)
+		keys.insertBack (elem);
+	}
+    }    
 
     void rewind(int nb = 1) {
 	currentWord -= nb;
     }
 
+    char [] getBytes (int size) {
+	auto ret = cast(char[])file [currentChar .. currentChar + size];
+	currentChar += size;
+	return ret;
+    }
+    
     bool getWord (ref Word word) {
 	if (currentChar >= file.length - 1) {
 	    return false;
@@ -125,6 +140,11 @@ class LexerString {
 	return null;
     }
 
+    void addKey (string name) {
+	keys.insertBack (name);
+    }
+
+    
     void addSkip (string name) {
 	skip.insertBack(name);
     }

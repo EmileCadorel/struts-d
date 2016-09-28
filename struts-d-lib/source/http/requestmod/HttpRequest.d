@@ -70,8 +70,12 @@ class HttpRequest {
 	return this._cache_control;
     }
 
-    ref HttpParameter [string] post_values () {
-	return this._post_values;
+    ref HttpParameter [string] content_type () {
+	return this._content_type;
+    }
+    
+    ref HttpPost post_value () {
+	return this._post_value;
     }
     
     ref HttpParameter [string] cookies () {
@@ -89,8 +93,9 @@ class HttpRequest {
 	buf.write ("FILE_FORMAT : " ~ to!string (_file_accepted) ~ "\n");
 	buf.write ("ENCODING : " ~ to!string(_encoding) ~ "\n");
 	buf.write ("CONNECTION : " ~ _connection ~ "\n");
-	buf.write ("POST_VALUES : " ~ to!string (_post_values) ~ "\n");
+	buf.write ("POST_VALUES : " ~ to!string (_post_value) ~ "\n");
 	buf.write ("COOKIES : " ~ to!string (_cookies) ~ "\n");
+	buf.write ("CONTENT_TYPE : " ~ to!string (_content_type) ~ "\n");
 	
 	return buf.toString;
     }
@@ -109,7 +114,8 @@ class HttpRequest {
 	string _referer;
 	string _cache_control;
 	
-	HttpParameter [string] _post_values;
+	HttpParameter [string] _content_type;	
+	HttpPost _post_value;
 	HttpParameter [string] _cookies;
     }
 }

@@ -1,5 +1,5 @@
 module http.requestmod.HttpRequestParser;
-import std.traits;
+import std.traits, std.string;
 import std.outbuffer;
 import std.conv, std.stdio;
 import utils.lexer;
@@ -14,46 +14,75 @@ enum HttpRequestTokens : string {
 	SLASH = "/",
 	QUES_MARK = "?",
 	EQUAL = "=",
-	AND = "&"
+	AND = "&",
+	BOUND_END = "--"
 	}
 
 class HttpRequestParser {    
     
     static HttpRequest parser (string data) {
 	LexerString lexer = new LexerString (data);
-	lexer.setKeys (make!(Array!string)(":", ",", "/", "?", "#", "=", "&", " ", "\n", "\r", ";"));
+	lexer.setKeys (make!(Array!string)(":", ",", "?", "#", "=", "&", " ", "\n", "\r", ";"));
 	lexer.setSkip (make!(Array!string)(" ", "\r", "\n"));
 	Word begin;
 	HttpRequest ret = new HttpRequest;
 	while (true) {
-	    auto read = lexer.getNext (begin);
+	    auto read = lexer.getNext (begin);	    
 	    if (!read) break;
+	    begin.str = toUpper(begin.str);
 	    if (find ([EnumMembers!HttpMethod], begin.str) != [])
 		parse_method (lexer, ret, begin);
-	    else if (begin.str == "Host")
+	    else if (begin.str == "HOST")
 		parse_host (lexer, ret);
-	    else if (begin.str == "User-Agent")
+	    else if (begin.str == "USER-AGENT")
 		parse_user (lexer, ret);
-	    else if (begin.str == "Accept")
+	    else if (begin.str == "ACCEPT")
 		parse_accept (lexer, ret);
-	    else if (begin.str == "Accept-Language")
+	    else if (begin.str == "ACCEPT-LANGUAGE")
 		parse_language (lexer, ret);
-	    else if (begin.str == "Accept-Encoding")
+	    else if (begin.str == "ACCEPT-ENCODING")
 		parse_encoding (lexer, ret);
-	    else if (begin.str == "Connection")
+	    else if (begin.str == "CONNECTION")
 		parse_connection (lexer, ret);
-	    else if (begin.str == "Referer")
+	    else if (begin.str == "REFERER")
 		parse_referer (lexer, ret);
-	    else if (begin.str == "Cache-Control")
+	    else if (begin.str == "CACHE-CONTROL")
 		parse_cache_control (lexer, ret);
-	    else if (begin.str == "Content-Length") 
+	    else if (begin.str == "CONTENT-LENGTH") 
 		parse_post_values (lexer, ret);
-	    else if (begin.str == "Cookie")
+	    else if (begin.str == "CONTENT-TYPE")
+		parse_content_type (lexer, ret);
+	    else if (begin.str == "COOKIE")
 		parse_cookies (lexer, ret);
 	}
 	return ret;
     }
 
+    static void parse_content_type (LexerString file, ref HttpRequest req) {
+	Word word;
+	if (!file.getNext (word) || word.str != HttpRequestTokens.COLON)
+	    throw new ReqSyntaxError (word);
+	while (true) {
+	    if(!file.getNext (word)) break;
+	    else {
+		string key = word.str;
+		if(!file.getNext (word))
+		    throw new ReqSyntaxError (word);
+		else if (word.str != HttpRequestTokens.EQUAL) {
+		    file.rewind ();
+		    req.content_type [key] = HttpParameter.empty;
+		} else {		    
+		    req.content_type [key] = parse_value (file, HttpRequestTokens.SEMI_COLON);
+		}
+		if (!file.getNext (word)) break;
+		else if (word.str != HttpRequestTokens.SEMI_COLON) {
+		    file.rewind ();
+		    break;
+		}
+	    }
+	}	
+    }
+    
     static void parse_cookies (LexerString file, ref HttpRequest req) {
 	Word word;
 	if (!file.getNext (word) || word.str != HttpRequestTokens.COLON) 
@@ -115,11 +144,13 @@ class HttpRequestParser {
     static void parse_method (LexerString lexer, ref HttpRequest req, Word elem) {
 	req.http_method = cast(HttpMethod)elem.str;
 	Word proto, word;
+	lexer.addKey (HttpRequestTokens.SLASH);
 	auto url = parse_url (lexer);
 	lexer.getNext (proto);
 	if(!lexer.getNext (word) || word.str != HttpRequestTokens.SLASH)
 	    throw new ReqSyntaxError (word);
 	lexer.getNext (proto);
+	lexer.removeKey (HttpRequestTokens.SLASH);
 	req.url = url;
 	req.proto = proto.str;
     }
@@ -145,7 +176,7 @@ class HttpRequestParser {
 	    else if (word.str != HttpRequestTokens.SLASH)
 		throw new ReqSyntaxError (word);	    
 	}
-
+	
 	if (word.str == HttpRequestTokens.QUES_MARK) {
 	    auto ret = parse_url_values(file, path);
 	    file.setSkip (make!(Array!string)(" ", "\n", "\r"));
@@ -174,22 +205,14 @@ class HttpRequestParser {
 	}	
     }
 
-    static void parse_post_values (LexerString file, HttpRequest req) {
-	Word word;	
-	if (!file.getNext (word) || word.str != HttpRequestTokens.COLON)
+    static void parse_post_values (LexerString lexer, HttpRequest req) {
+	Word word;
+	if (!lexer.getNext (word) || word.str != HttpRequestTokens.COLON)
 	    throw new ReqSyntaxError (word);
-	auto size = parse_value (file);	
-	while (true) {	    
-	    if (!file.getNext (word)) throw new ReqSyntaxError (word);
-	    writeln (word.str);
-	    string key = word.str;
-	    if (!file.getNext (word) || word.str != HttpRequestTokens.EQUAL) 
-		throw new ReqSyntaxError (word);
-	    req.post_values[key] = parse_value (file);
-	    if (!file.getNext (word)) return;
-	    else if (word.str != HttpRequestTokens.AND)
-		throw new ReqSyntaxError (word);
-	}
+	auto size = parse_value (lexer);       	
+	auto datas = lexer.getBytes (size.to!int + 4);
+	writeln (datas);
+	req.post_value = HttpPostParser.parse (to!string (datas), req.content_type ["boundary"].to!string);
     }
 
     
