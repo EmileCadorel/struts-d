@@ -45,7 +45,9 @@ abstract class ControllerAncestor {
     }
 
     HttpParameter post (string key) {
-	return this._request.post_value.params[key];
+	if (this._request.post_value !is null) 
+	    return this._request.post_value.params[key];
+	else return HttpParameter.empty;
     }
 
     HttpParameter cookie (string key) {
