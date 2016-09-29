@@ -6,11 +6,15 @@
   <controllers>
     <controller>
       <name>NotFound</name>
-      <class>control.NotFoundController.NotFoundController</class>
+      <class>servlib.control.NotFoundController.NotFoundController</class>
     </controller>
     <controller>
       <name>home</name>
       <class>example.HomeController.HomeController</class>
+    </controller>
+    <controller>
+      <name>app</name>
+      <class>main.Test</class>
     </controller>
   </controllers>
 </config>

@@ -1,11 +1,11 @@
 {
-    "name": "struts-dlib",
+    "name": "client-addon",
     "targetType" : "library",
     "description": "Web library run by struts-d Http Server, for creating and web application",
     "copyright": "Copyright © 2016, emile",
     "authors": ["emile"],
     "dflags" : ["-fPIC"],
-    "subPackages" : [
-	"./client-addon"
-    ]
+    "dependencies" : {
+	"struts-dlib" : "*"
+    }
 }

@@ -1,5 +1,5 @@
 module example.HomeController;
-import control.Controller;
+import servlib.control.Controller;
 
 // On va simplement renvoyer un message basique pour le moment..
 
@@ -13,6 +13,11 @@ class HomeController : Controller!HomeController {
             <input type=\"text\" name=\"nom_3\"/>
             <input type=\"submit\" value=\"send\">
             </form>";
-      } else return "Error";
+      } else return "<h1 align=\"center\">Home !</h1>
+            <form method=\"post\">
+            <input type=\"text\" name=\"nom1\"/>
+            <input type=\"text\" name=\"nom_3\"/>
+            <input type=\"submit\" value=\"send\">
+            </form>";
   }
 }
