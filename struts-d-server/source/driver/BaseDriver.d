@@ -29,7 +29,7 @@ class BaseDriver : HttpSession {
 	controllers = Option.instance.controllers;
     }
 
-    void on_begin (Address addr) {
+    override void on_begin (Address addr) {
 	try {
 	    this.client_addr = addr.toAddrString();
 	    Log.instance.add_info ("Connexion de " ~ this.client_addr);
@@ -39,7 +39,7 @@ class BaseDriver : HttpSession {
 	}	
     }
 
-    void on_end () {
+    override void on_end () {
 	Log.instance.add_info ("Deconnexion de " ~ this.client_addr);
     }
 

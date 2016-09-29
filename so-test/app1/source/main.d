@@ -4,12 +4,8 @@ import clielib.SoLinkage;
 import servlib.control.Controller;
 
 class Test : Controller!Test {
-    string execute () {
+    override string execute () {
 	return "SUCCESS";
-    }
-
-    string toString () {
-	return "ici:Main:Test";
     }
 }
 

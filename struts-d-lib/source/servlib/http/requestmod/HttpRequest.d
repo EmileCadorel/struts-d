@@ -82,7 +82,7 @@ class HttpRequest {
 	return this._cookies;
     }
 
-    string toString () {
+    override string toString () {
 	OutBuffer buf = new OutBuffer;
 	buf.write ("METHODE : " ~ to!string (type) ~ "\n");
 	buf.write ("URL : " ~ _url.toString() ~ "\n");

@@ -23,7 +23,7 @@ class HttpUrl {
 	else return HttpParameter.empty;
     }
 
-    string toString () {
+    override string toString () {
 	OutBuffer buf = new OutBuffer;
 	buf.write ("PATH : /");
 	foreach (it ; path) {

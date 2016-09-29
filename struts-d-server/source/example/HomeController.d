@@ -4,7 +4,7 @@ import servlib.control.Controller;
 // On va simplement renvoyer un message basique pour le moment..
 
 class HomeController : Controller!HomeController {
-  string execute () {
+    override string execute () {
       auto it = this.get ("test");
       if (!it.isVoid) {
 	  return "<h1 align=\"center\">Home ! " ~ this.get("test").to!string ~ "</h1>

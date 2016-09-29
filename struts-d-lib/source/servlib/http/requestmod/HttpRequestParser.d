@@ -6,6 +6,7 @@ import servlib.utils.lexer;
 import std.container;
 import servlib.http.request;
 import servlib.utils.exception;
+import std.algorithm : equal, find;
 
 enum HttpRequestTokens : string {
     COLON = ":",

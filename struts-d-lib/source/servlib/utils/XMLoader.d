@@ -4,6 +4,7 @@ import std.outbuffer, std.traits;
 import std.conv : to;
 import std.container, std.string, std.stdio;
 import servlib.utils.exception;
+import std.algorithm : equal, find;
 
 struct Location {
     string filename;
@@ -31,7 +32,7 @@ class Identifiant {
 	return new Identifiant ("", Location("", -1, -1));
     }
 
-    bool opEquals (Object other_) {
+    override bool opEquals (Object other_) {
 	Identifiant other = cast(Identifiant) other_;
 	if (other is null) return false;
 	if (this.space !is null) {
