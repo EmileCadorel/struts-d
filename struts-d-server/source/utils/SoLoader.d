@@ -24,6 +24,10 @@ class SoError : Exception {
 class SoLoader {
 
     void load (string name) {
+	auto it = (name in alls);
+	if (it !is null) {
+	    close (*it);
+	}	
 	void * lh = dlopen (name.ptr, RTLD_LAZY);
 	if (!lh)
 	    throw new SoError (name, to!string (dlerror ()));	
@@ -35,6 +39,13 @@ class SoLoader {
 	alls [name] = (lh);
     }
 
+    void stop () {
+	foreach (key, value ; alls) {
+	    Log.instance.add_info ("Close Dll : " ~ key);
+	    dlclose (value);
+	}
+    }
+    
     mixin Singleton!SoLoader;
     
     private {
@@ -42,11 +53,12 @@ class SoLoader {
 	
 	this () {}
 	void* [string] alls;
+
+	void close (void * value) {
+	    dlclose (value);
+	}
+	
 	~this() {
-	    foreach (key, value ; alls) {
-		Log.instance.add_info ("Close Dll : " ~ key);
-		dlclose (value);
-	    }
 	}
     }
     

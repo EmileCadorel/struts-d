@@ -6,5 +6,9 @@
       <result>error.sp</result>
     </action>
   </package>
+
+  <action type="index" class="main.Test">
+  </action>
+
   
 </struts>

@@ -4,8 +4,8 @@ import core.runtime;
 import std.stdio;
 
 shared static this () {
-    writeln ("Runtime launched");
     Runtime.initialize ();
+    writeln ("Runtime launched");
 }
 
 shared static ~this () {
