@@ -38,8 +38,7 @@ class SoLoader {
     mixin Singleton!SoLoader;
     
     private {
-	static immutable string LOAD_FUN = "_D7clielib9SoLinkage6Shared15loadControllersUC7servlib7control10Controller15ControllerTableZv";
-;
+	static immutable string LOAD_FUN = "_D6struts9SoLinkage6Shared15loadControllersUC7servlib7control10Controller15ControllerTableZv";
 	
 	this () {}
 	void* [string] alls;

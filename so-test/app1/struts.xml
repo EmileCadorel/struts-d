@@ -1,0 +1,10 @@
+<struts lib="bin/machin.so">
+
+  <package name="main">
+    <action name="test1" class="Test">
+      <result name="success">page1.sp</result>
+      <result>error.sp</result>
+    </action>
+  </package>
+  
+</struts>

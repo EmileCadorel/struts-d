@@ -1,4 +1,4 @@
-module clielib.SoLinkage;
+module struts.SoLinkage;
 import servlib.control.Controller;
 import core.runtime;
 import std.stdio;

@@ -1,7 +1,6 @@
 module main;
 import std.stdio;
-import clielib.SoLinkage;
-import servlib.control.Controller;
+import struts.control;
 
 class Test : Controller!Test {
     override string execute () {
