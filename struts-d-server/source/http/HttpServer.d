@@ -40,17 +40,11 @@ class HttpServer (T : HttpSession) : HttpServerBase {
 	void run () {
 	    this.console = new Console (this);
 	    this.console.start ();
-	    SocketSet set = new SocketSet();
-	    set.add (this.socket);
 	    while (!this.end) {
-		if (Socket.select (set, null, null, dur!"seconds"(1)) > 0) {
-		    auto client = this.socket.accept ();
-		    if (client !is null && !this.end) {
-			auto session = new T (client);
-			this.view_states.insertFront (session);
-			session.start ();
-		    }
-		}
+		auto client = this.socket.accept ();
+		auto session = new T (client);
+		this.view_states.insertFront (session);
+		session.start ();		    		
 	    }
 	}
     }
