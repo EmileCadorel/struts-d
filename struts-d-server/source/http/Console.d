@@ -6,6 +6,7 @@ import core.thread;
 import servlib.utils.Log;
 import servlib.utils.lexer;
 import std.container, std.outbuffer;
+import servlib.application.Application;
 
 class Console : Thread {
 
@@ -61,9 +62,14 @@ class Console : Thread {
     void deployCom (string[] data) {
 	if (data.length > 1 && (data[1] == "-h" || data[1] == "--help")) {
 	    Log.instance.add_info ("deploy [-a] name : this will deploy or redeploy an application (based on its name)");
+	} else if (data.length == 1) {
+	    Log.instance.add_info ("deploy [-a] name : this will deploy or redeploy an application (based on its name)");
 	} else {
-	    Log.instance.add_err ("TODO : deploy application");
-	}
+	    if (data.length > 1) {
+		string path = data[1];
+		ApplicationLoader.instance.load (path);
+	    }
+	} 
     }    
 	    
     void notFoundCom (string [] data) {
