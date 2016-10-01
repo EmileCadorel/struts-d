@@ -98,7 +98,7 @@ class LexerString {
     }
     
     bool getWord (ref Word word) {
-	if (currentChar >= file.length - 1) {
+	if (currentChar >= file.length) {
 	    return false;
 	}
 	auto line = file[currentChar .. file.length];
@@ -157,10 +157,10 @@ class LexerString {
 	    sizes.insertBack( word.toStr.length + 1 );
 	}
 	buf.write("\n");
-	foreach (it ; 0 .. currentWord + 1) {
+	/*foreach (it ; 0 .. currentWord + 1) {
 	    buf.write (rightJustify ("", sizes[it], ' '));
 	}
-	buf.write("^\n");
+	buf.write("^\n");*/
 	return buf.toString;
     }
 

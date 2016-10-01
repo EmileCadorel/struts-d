@@ -24,9 +24,13 @@ class SoError : Exception {
 class SoLoader {
 
     void load (string name) {
+	auto it = (name in alls);
+	if (it !is null) {
+	    close (*it);
+	}
 	void * lh = dlopen (name.ptr, RTLD_LAZY);
 	if (!lh)
-	    throw new SoError (name, to!string (dlerror ()));	
+	    throw new SoError (name, to!string (dlerror ()));
 	Log.instance.add_info ("Dll open : ", name);
 	void function(ControllerTable) fn = cast(void function (ControllerTable)) dlsym (lh, LOAD_FUN.ptr);
 	auto error = dlerror ();
@@ -35,19 +39,27 @@ class SoLoader {
 	alls [name] = (lh);
     }
 
-    mixin Singleton!SoLoader;
-    
-    private {
-	static immutable string LOAD_FUN = "_D6struts9SoLinkage6Shared15loadControllersUC7servlib7control10Controller15ControllerTableZv";
-	
-	this () {}
-	void* [string] alls;
-	~this() {
-	    foreach (key, value ; alls) {
-	      Log.instance.add_info ("Close Dll : ", key);
-		dlclose (value);
-	    }
+    void stop () {
+	foreach (key, value ; alls) {
+	  Log.instance.add_info ("Close Dll : ", key);
+	    dlclose (value);
 	}
     }
-    
+
+    mixin Singleton!SoLoader;
+
+    private {
+	static immutable string LOAD_FUN = "_D6struts9SoLinkage6Shared15loadControllersUC7servlib7control10Controller15ControllerTableZv";
+
+	this () {}
+	void* [string] alls;
+
+	void close (void * value) {
+	    dlclose (value);
+	}
+
+	~this() {
+	}
+    }
+
 }
