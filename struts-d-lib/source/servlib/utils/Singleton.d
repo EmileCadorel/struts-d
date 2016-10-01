@@ -1,7 +1,7 @@
 module servlib.utils.Singleton;
 
 mixin template Singleton (T) {
-    
+
     static ref T instance () {
 	if (inst is null) {
 	    synchronized {
@@ -15,7 +15,7 @@ mixin template Singleton (T) {
     }
 
 private:
-       
+
     __gshared static T inst = null;
-    
+
 }

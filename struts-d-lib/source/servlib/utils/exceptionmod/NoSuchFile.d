@@ -6,7 +6,7 @@ import servlib.utils.Log;
 class NoSuchFile : StrutsException {
 
     this (string file) {
-      Log.instance.add_err ("Erreur, le fichier " ~ file ~ " n'existe pas.");
+      Log.instance.add_err ("Erreur, le fichier ", file, " n'existe pas.");
 	super("Erreur : le fichier '" ~ file ~ "' n'existe pas\n");
     }
 

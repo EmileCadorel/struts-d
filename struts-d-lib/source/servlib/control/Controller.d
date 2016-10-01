@@ -5,7 +5,7 @@ import std.stdio;
 import std.outbuffer, std.conv;
 
 class ControllerTable {
-        
+
     void insert (string name, ControllerAncestor control) {
 	_global [name] = control;
     }
@@ -25,7 +25,7 @@ class ControllerTable {
 	buf.write (to!string (_global));
 	return buf.toString();
     }
-        
+
     mixin Singleton!ControllerTable;
 
     private {
@@ -57,7 +57,7 @@ abstract class ControllerAncestor {
     }
 
     HttpParameter post (string key) {
-	if (this._request.post_value !is null) 
+	if (this._request.post_value !is null)
 	    return this._request.post_value.params[key];
 	else return HttpParameter.empty;
     }
@@ -79,10 +79,10 @@ abstract class ControllerAncestor {
 abstract class Controller (T) : ControllerAncestor {
     mixin ControlInsert!T;
 }
-				
-				 
-				
-				
-				
-				
-				
+
+
+
+
+
+
+

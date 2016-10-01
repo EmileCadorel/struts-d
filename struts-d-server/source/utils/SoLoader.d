@@ -27,7 +27,7 @@ class SoLoader {
 	void * lh = dlopen (name.ptr, RTLD_LAZY);
 	if (!lh)
 	    throw new SoError (name, to!string (dlerror ()));	
-	Log.instance.add_info ("Dll open : " ~ name);
+	Log.instance.add_info ("Dll open : ", name);
 	void function(ControllerTable) fn = cast(void function (ControllerTable)) dlsym (lh, LOAD_FUN.ptr);
 	auto error = dlerror ();
 	if (error) throw new SoError (name, to!string(error));
@@ -44,7 +44,7 @@ class SoLoader {
 	void* [string] alls;
 	~this() {
 	    foreach (key, value ; alls) {
-		Log.instance.add_info ("Close Dll : " ~ key);
+	      Log.instance.add_info ("Close Dll : ", key);
 		dlclose (value);
 	    }
 	}
