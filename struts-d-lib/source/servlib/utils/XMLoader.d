@@ -32,14 +32,16 @@ class Identifiant {
 	return new Identifiant ("", Location("", -1, -1));
     }
 
-    override bool opEquals (Object other_) {
+    
+    override bool opEquals (Object other_) {	
 	Identifiant other = cast(Identifiant) other_;
-	if (other is null) return false;
-	if (this.space !is null) {
-	    return this.name == other.name && this.space == other.space;
-	} else {
-	    return this.name == other.name;
-	}
+	if (other !is null) {	
+	    if (this.space !is null) {
+		return this.name == other.name && this.space == other.space;
+	    } else {
+		return this.name == other.name;
+	    }
+	} else return false;
     }
 
 

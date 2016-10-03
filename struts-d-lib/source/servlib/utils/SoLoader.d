@@ -1,4 +1,4 @@
-module utils.SoLoader;
+module servlib.utils.SoLoader;
 import servlib.utils.Singleton;
 import servlib.control.Controller;
 import std.container, std.outbuffer, std.conv;

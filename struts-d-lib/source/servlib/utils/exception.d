@@ -4,6 +4,7 @@ public import servlib.utils.exceptionmod.ReqSyntaxException;
 public import servlib.utils.exceptionmod.XMLSyntaxError;
 public import servlib.utils.exceptionmod.ConfigFile;
 public import servlib.utils.exceptionmod.Server;
+public import servlib.utils.exceptionmod.ManifestError;
 import servlib.utils.Log;
 
 class StrutsException : Exception {

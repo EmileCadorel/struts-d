@@ -12,7 +12,7 @@ import servlib.control.NotFoundController;
 import servlib.control.ControllerContainer;
 import servlib.utils.XMLoader;
 import servlib.utils.Option;
-import utils.SoLoader;
+import servlib.utils.SoLoader;
 
 /**
  Driver de base pour ce serveur web
