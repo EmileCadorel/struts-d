@@ -1,6 +1,7 @@
 module servlib.utils.exceptionmod.XMLSyntaxError;
 import servlib.utils.exception;
 import servlib.utils.lexer;
+import servlib.utils.Log;
 import std.outbuffer, std.conv;
 
 
@@ -37,6 +38,7 @@ class XMLSyntaxError : StrutsException {
 	    buf.write ("\n");
 	}
 	msg = buf.toString();
+	Log.instance.add_err (msg);
     }
 
 }

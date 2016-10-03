@@ -32,32 +32,32 @@ class BaseDriver : HttpSession {
     override void on_begin (Address addr) {
 	try {
 	    this.client_addr = addr.toAddrString();
-	    Log.instance.add_info ("Connexion de " ~ this.client_addr);
+	    Log.instance.add_info ("Connexion de ", this.client_addr);
 	    this.start_routine ();
 	} catch (Exception e) {
 	    writeln (e.toString());
-	}	
+	}
     }
 
     override void on_end () {
-	Log.instance.add_info ("Deconnexion de " ~ this.client_addr);
+      Log.instance.add_info ("Deconnexion de ", this.client_addr);
     }
 
     void start_routine () {
 	string data = "";
 	int status_recv = this.recv_request (data);
-	
+
 	if (status_recv < 0) {
 	    Log.instance.add_err (this.socket.getErrorText());
 	} else {
 	    HttpRequest request = this.toRequest (data);
-	    Log.instance.add_info (this.client_addr ~ " : " ~ to!string(request.http_method) ~ " " ~ request.url.toString());
-	    
+	    Log.instance.add_info (this.client_addr, " : ", to!string(request.http_method), " ", request.url.toString());
+
 	    string controller_name;
 	    HttpUrl url = request.url;
 	    if (url.path.length > 0)
 		controller_name = url.path[0];
-	    
+
 	    // on s'emmerde pas avec le favicon demandé à chaque fois...
 	    if (controller_name == "favicon.ico") {
 		controller_name = "";
@@ -67,7 +67,7 @@ class BaseDriver : HttpSession {
 	    if (controller is null) {
 		controller = ControllerTable.instance[this.controllers["NotFound"]];
 	    }
-	    
+
 	    HttpResponse response = this.build_response (request, controller);
 	    this.send_response (response);
 	}
@@ -164,7 +164,7 @@ class BaseDriver : HttpSession {
     void send_response (HttpResponse response) {
 	auto error = this.socket.send (response.enpack());
 	if (error == Socket.ERROR)
-	    Log.instance.add_err ("Send response : " ~ this.socket.getErrorText());
+	  Log.instance.add_err ("Send response : ", this.socket.getErrorText());
     }
 
     private {

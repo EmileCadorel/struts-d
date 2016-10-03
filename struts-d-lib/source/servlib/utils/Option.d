@@ -128,22 +128,22 @@ class Option {
 	} else {
 	  throw new ConfigFileError ("Le format du fichier de configuration est invalide. Détail : " ~ child.getValue());
 	}
-	Log.instance.add_info ("Paramètre chargé : use_sessid -> " ~ child.getValue());
+	Log.instance.add_info ("Paramètre chargé : use_sessid -> ", child.getValue());
       } else if (b.name.name == "sessions_path") {
 	if (b.childs.length != 1)
 	  throw new ConfigFileError ("Le format du fichier de configuration est incomplet. Détail : sessions_path");
 	this._paths["session_dir"] = b.childs[0].getValue();
-	Log.instance.add_info ("Paramètre chargé : session_dir -> " ~ b.childs[0].getValue());
+	Log.instance.add_info ("Paramètre chargé : session_dir -> ", b.childs[0].getValue());
       } else if (b.name.name == "log_file_path") {
 	if (b.childs.length != 1)
 	  throw new ConfigFileError ("Le format du fichier de configuration est incomplet. Détail : log_file_path");
 	this._paths["log_file"] = b.childs[0].getValue();
-	Log.instance.add_info ("Paramètre chargé : log_file -> " ~ b.childs[0].getValue());
+	Log.instance.add_info ("Paramètre chargé : log_file -> ", b.childs[0].getValue());
       } else if (b.name.name == "debug_mode") {
 	if (b.childs.length != 1)
 	  throw new ConfigFileError ("Le format du fichier de configuration est incomplet. Détail : log_file_path");
 	this._debug_mode = (b.childs[0].getValue() == "true");
-	Log.instance.add_info ("Paramètre chargé : debug_mode -> " ~ b.childs[0].getValue());
+	Log.instance.add_info ("Paramètre chargé : debug_mode -> ", b.childs[0].getValue());
       } else if (b.name.name == "controllers") {
 	if (b.childs.length != 1)
 	  throw new ConfigFileError ("Le format du fichier de configuration est incomplet. Détail : controllers");
@@ -161,7 +161,7 @@ class Option {
 	  if (b_name.name.name == "name" && b_class.name.name == "class") {
 	    import std.stdio; writeln ("controllers : ", this._controllers);
 	    this._controllers[b_name.childs[0].getValue()] = b_class.childs[0].getValue();
-	    Log.instance.add_info ("Controlleur ajouté : " ~ b_name.childs[0].getValue() ~ " -> " ~ b_class.childs[0].getValue());
+	    Log.instance.add_info ("Controlleur ajouté : ", b_name.childs[0].getValue(), " -> ", b_class.childs[0].getValue());
 	  }
 	} else {
 	  //TODO
