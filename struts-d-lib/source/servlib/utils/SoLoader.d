@@ -19,6 +19,10 @@ class SoError : Exception {
 	buf.write (data);
 	msg = buf.toString ();
     }
+    
+    override string toString () {
+	return msg;
+    }    
 }
 
 class SoLoader {

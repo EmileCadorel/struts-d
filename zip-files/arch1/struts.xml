@@ -1,0 +1,11 @@
+<struts>
+  <action name="home" class="main.Home">
+    <result>Success </result>
+  </action>
+
+  <action name="search" class="main.Search">
+    <result>Success</result>
+  </action>
+</struts>
+
+

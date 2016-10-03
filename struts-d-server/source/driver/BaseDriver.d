@@ -63,10 +63,24 @@ class BaseDriver : HttpSession {
 		controller_name = "";
 	    }
 
-	    ControllerAncestor controller = ControllerTable.instance [this.controllers[controller_name]];
+	    /*ControllerAncestor controller = ControllerTable.instance [this.controllers[controller_name].control];
 	    if (controller is null) {
-		controller = ControllerTable.instance[this.controllers["NotFound"]];
+		controller = ControllerTable.instance[this.controllers["NotFound"].control];
+		}*/
+	    ControllerAncestor controller = null;
+	    
+	    foreach (it; ApplicationContainer.instance.all ()) {
+		auto control = it[controller_name];
+		if (!control.isNull) {
+		    controller = ControllerTable.instance [control.control];
+		    break;
+		}
 	    }
+	    
+	    if (controller is null) {
+		controller = ControllerTable.instance[this.controllers["NotFound"].control];
+	    }
+	    writeln (controller.classinfo.name);
 
 	    HttpResponse response = this.build_response (request, controller);
 	    this.send_response (response);

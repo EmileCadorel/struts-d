@@ -160,7 +160,7 @@ class Option {
 	  Balise b_class = b.childs[1];
 	  if (b_name.name.name == "name" && b_class.name.name == "class") {
 	    import std.stdio; writeln ("controllers : ", this._controllers);
-	    this._controllers[b_name.childs[0].getValue()] = b_class.childs[0].getValue();
+	    this._controllers[b_name.childs[0].getValue()] = ControllerInfos (b_name.childs[0].getValue(), b_class.childs[0].getValue(), null, null);
 	    Log.instance.add_info ("Controlleur ajouté : ", b_name.childs[0].getValue(), " -> ", b_class.childs[0].getValue());
 	  }
 	} else {

@@ -2,8 +2,9 @@
     "name": "app1",
     "targetType" : "dynamicLibrary",
     "description": "A minimal D application.",
-    "copyright": "Copyright © 2016, emile",
+    "copyright": "Copyright © 2016, emile",    
     "authors": ["emile"],
+    "libs":["phobos2"],
     "dependencies": {
 	"struts-dlib" : "*",
 	"struts-dlib:client-addon" : "*"

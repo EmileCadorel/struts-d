@@ -1,4 +1,5 @@
 <manifest>
   <lib path="bin/libapp1.so"/>
+  <struts path="struts.xml"/>
 </manifest>
  

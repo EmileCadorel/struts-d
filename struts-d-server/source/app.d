@@ -13,7 +13,7 @@ void main (string[] args) {
     Log.instance.add_info ("Lancement du serveur.");
     
     try {
-
+	SoLoader.instance.load ("../so-test/app1/libapp1.so");
 	opt.load_config ("test");
 	writeln (ControllerTable.instance.toString());
 	HttpServer!BaseDriver serv = new HttpServer!BaseDriver ([]);

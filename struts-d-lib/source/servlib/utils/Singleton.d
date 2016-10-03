@@ -6,6 +6,7 @@ mixin template Singleton (T) {
 	if (inst is null) {
 	    synchronized {
 		if (inst is null) {
+		    import std.stdio;
 		    writeln ("Singleton:ici:" ~ T.classinfo.name);
 		    inst = new T;
 		}

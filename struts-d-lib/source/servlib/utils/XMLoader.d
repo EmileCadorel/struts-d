@@ -78,10 +78,16 @@ class Balise {
 	this.name = name;
 	this.attrs = attrs;
 	this.childs = childs;
+    }    
+    
+    string getValue() { return ""; }
+
+    string opIndex (string name) {
+	foreach (key, value; attrs)
+	    if (key.name == name) return value;
+	return null;
     }
-
-  string getValue() { return ""; }
-
+    
     Identifiant name;
     string [Identifiant] attrs;
     Array!Balise childs;
@@ -104,7 +110,7 @@ class Balise {
 	}
 	return buf.toString ();
     }
-
+    
 }
 
 class ProcInst : Balise {
