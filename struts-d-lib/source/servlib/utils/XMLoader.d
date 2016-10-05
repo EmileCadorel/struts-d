@@ -32,6 +32,14 @@ class Identifiant {
 	return new Identifiant ("", Location("", -1, -1));
     }
 
+   bool opEquals (string str){
+    if (this.space !is null){
+      return str == (this.space.name ~ ":" ~ this.name);
+    }else {
+      return str == this.name;
+    }
+    
+  }
     
     override bool opEquals (Object other_) {	
 	Identifiant other = cast(Identifiant) other_;
