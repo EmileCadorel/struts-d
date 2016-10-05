@@ -4,18 +4,37 @@ import servlib.utils.Singleton;
 import std.stdio;
 import std.outbuffer, std.conv;
 
+/**
+ Singleton stockant les instances de controller
+*/
 class ControllerTable {
 
+    /**
+     Ajoute un controller a la base des controller
+     Params:
+     name, le nom du controller
+     control, le controller
+     */
     void insert (string name, ControllerAncestor control) {
 	_global [name] = control;
     }
 
+    /**
+     Params:
+     name, le nom du controller
+     Return:
+     un controller en fonction de son nom
+     */
     ControllerAncestor opIndex (string name) {
 	auto it = name in _global;
 	if (it !is null) return *it;
 	else return null;
     }
 
+    /**
+     Return:
+     tout les controller
+     */
     ref ControllerAncestor [string] getAll () {
 	return this._global;
     }
@@ -33,6 +52,9 @@ class ControllerTable {
     }
 }
 
+/**
+ Permet d'instancier les controller statiquement
+ */
 template ControlInsert (T : ControllerAncestor) {
     static this () {
 	writeln ("insert : " ~ T.classinfo.name);
@@ -40,6 +62,9 @@ template ControlInsert (T : ControllerAncestor) {
     }
 }
 
+/**
+ L'ancetre de tout les controller
+ */
 abstract class ControllerAncestor {
 
     /**
@@ -50,7 +75,6 @@ abstract class ControllerAncestor {
     }
 
     abstract string execute ();
-
 
     HttpParameter get (string key) {
 	return this._request.url.param(key);
@@ -76,8 +100,11 @@ abstract class ControllerAncestor {
 
 }
 
+/**
+ Cette classe est celle que l'utilisateur va herite afin de creer une instance de controller au demarrage de la runtime D.
+*/
 abstract class Controller (T) : ControllerAncestor {
-    mixin ControlInsert!T;
+    mixin ControlInsert!T; /// ce mixin va instancier statiquement la classe controller
 }
 
 

@@ -4,8 +4,18 @@ import servlib.utils.exception;
 import servlib.control.ControllerContainer;
 import std.stdio;
 
+
+/**
+ Permet le chargement d'un fichier de type struts.xml
+ */
 class StrutsLoader {
 
+    /**
+     Charge le fichier 
+     Params:
+     name, le path vers le fichier
+     app, le nom de l'application a charger
+     */
     static void load (string name, string app) {
 	auto root = XMLoader.root (name);
 	writeln (name);
