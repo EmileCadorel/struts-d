@@ -13,6 +13,7 @@ struct Location {
 }
 
 class Identifiant {
+
     string name;
     Identifiant space;
     Location locate;
@@ -59,6 +60,12 @@ class Identifiant {
 	else return name ~ "!" ~ to!string (locate);
     }
 
+    string toXml () {
+	if (space !is null)
+	    return space.toSimpleString() ~ ":" ~ name;
+	else return name;
+    }
+    
     private {
 	string toSimpleString () {
 	    return this.name;
@@ -67,7 +74,7 @@ class Identifiant {
 }
 
 class Balise {
-
+    
     this (Identifiant name) {
 	this.name = name;
     }
@@ -99,7 +106,8 @@ class Balise {
     Identifiant name;
     string [Identifiant] attrs;
     Array!Balise childs;
-
+    Balise father = null;
+    
     string toStr (int nb = 0) {
 	OutBuffer buf = new OutBuffer();
 	buf.write (rightJustify("", nb, ' '));
@@ -117,6 +125,31 @@ class Balise {
 	    buf.write ("\n");
 	}
 	return buf.toString ();
+    }
+
+    void toXml (ref OutBuffer buf, int nb = 0) {
+	if (buf is null) buf = new OutBuffer ();
+	buf.write (rightJustify ("", nb, ' '));
+	buf.write ("<");
+	buf.write (this.name.toXml);
+	foreach (key, value; attrs) {
+	    buf.write (" ");
+	    buf.write (key.toXml);
+	    buf.write ("=\"");
+	    buf.write (value);
+	    buf.write ("\"");
+	}
+	if (this.childs.length == 0) buf.write ("/>\n");
+	else {
+	    buf.write (">\n");
+	    foreach (it ; this.childs) {
+		it.toXml (buf, nb + 4);		
+	    }
+	    buf.write (rightJustify("", nb, ' '));
+	    buf.write ("</");
+	    buf.write (this.name.toXml);
+	    buf.write (">\n");
+	}
     }
     
 }
@@ -144,6 +177,12 @@ class Text : Balise {
 	buf.write (content);
 	buf.write ("]");
 	return buf.toString ();
+    }
+
+    override void toXml (ref OutBuffer buf, int nb = 0) {
+	buf.write (rightJustify ("", nb, ' '));	
+	buf.write (this.content);
+	buf.write ("\n");
     }
 
     string content;
@@ -232,9 +271,9 @@ class XMLoader {
 	    while (true) {
 		auto end = file.getNext (word);
 		if (!end) throw new XMLSyntaxError (file, word);
-		if (word.str == XMLTokens.START)
+		if (word.str == XMLTokens.START) {
 		    childs.insertBack (readOpen (file));
-		else if (word.str == XMLTokens.SSTART) {
+		} else if (word.str == XMLTokens.SSTART) {
 		    Identifiant close_id = readIdentifiant (file);
 		    if (close_id != id)
 			throw new XMLSyntaxError (file, word);

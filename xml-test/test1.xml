@@ -1,8 +1,8 @@
-<xl:salut>
+<salut>
   Salut comment ca va
-  <a attr="salut<10">
+  <a attr="salut10">
     <b>
       Hehe
     </b>
   </a>  
-</xl:salut>
+</salut>
