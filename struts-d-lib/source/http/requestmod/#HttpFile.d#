@@ -1,0 +1,14 @@
+module http.requestmod.HttpRequest
+
+class HttpFile{
+  this(){
+  }
+
+  private {
+    string _disposition;
+    string _name;
+    string _filename;
+    string _type;
+    
+  }
+}
