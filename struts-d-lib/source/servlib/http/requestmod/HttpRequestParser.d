@@ -8,6 +8,9 @@ import servlib.http.request;
 import servlib.utils.exception;
 import std.algorithm : equal, find;
 
+/**
+ Les token utilise dans une requete http
+ */
 enum HttpRequestTokens : string {
     COLON = ":",
 	SEMI_COLON = ";",
@@ -19,8 +22,15 @@ enum HttpRequestTokens : string {
 	BOUND_END = "--"
 	}
 
+/**
+ Parse une requete HTTP
+ */
 class HttpRequestParser {    
-    
+
+    /**
+     Params:
+     data, le contenu de la requete
+     */
     static HttpRequest parser (string data) {
 	LexerString lexer = new LexerString (data);
 	lexer.setKeys (make!(Array!string)(":", ",", "?", "#", "=", "&", " ", "\n", "\r", ";"));
@@ -59,7 +69,7 @@ class HttpRequestParser {
 	return ret;
     }
 
-    static void parse_content_type (LexerString file, ref HttpRequest req) {
+    private static void parse_content_type (LexerString file, ref HttpRequest req) {
 	Word word;
 	if (!file.getNext (word) || word.str != HttpRequestTokens.COLON)
 	    throw new ReqSyntaxError (word);
@@ -84,7 +94,7 @@ class HttpRequestParser {
 	}	
     }
     
-    static void parse_cookies (LexerString file, ref HttpRequest req) {
+    private static void parse_cookies (LexerString file, ref HttpRequest req) {
 	Word word;
 	if (!file.getNext (word) || word.str != HttpRequestTokens.COLON) 
 	    throw new ReqSyntaxError (word);
@@ -109,7 +119,7 @@ class HttpRequestParser {
 	}
     }
         
-    static void parse_cache_control (LexerString file, ref HttpRequest req) {
+    private static void parse_cache_control (LexerString file, ref HttpRequest req) {
 	Word word;
 	if(!file.getNext (word) || word.str != HttpRequestTokens.COLON)
 	    throw new ReqSyntaxError (word);
@@ -126,7 +136,7 @@ class HttpRequestParser {
 
     }
     
-    static void parse_referer (LexerString file, ref HttpRequest req) {
+    private static void parse_referer (LexerString file, ref HttpRequest req) {
 	Word word;
 	if(!file.getNext (word) || word.str != HttpRequestTokens.COLON)
 	    throw new ReqSyntaxError (word);
@@ -142,7 +152,7 @@ class HttpRequestParser {
 	file.setSkip (make!(Array!string)(" ", "\r", "\n"));
     }
     
-    static void parse_method (LexerString lexer, ref HttpRequest req, Word elem) {
+    private static void parse_method (LexerString lexer, ref HttpRequest req, Word elem) {
 	req.http_method = cast(HttpMethod)elem.str;
 	Word proto, word;
 	lexer.addKey (HttpRequestTokens.SLASH);
@@ -156,7 +166,7 @@ class HttpRequestParser {
 	req.proto = proto.str;
     }
 
-    static HttpUrl parse_url (LexerString file) {
+    private static HttpUrl parse_url (LexerString file) {
 	Word word;
 	file.getNext (word);
 	if (word.str != HttpRequestTokens.SLASH)
@@ -188,7 +198,7 @@ class HttpRequestParser {
 	}	    
     }
 
-    static HttpUrl parse_url_values (LexerString file, Array!string path) {
+    private static HttpUrl parse_url_values (LexerString file, Array!string path) {
 	Word word;
 	HttpParameter [string] params;
 	while (true) {
@@ -206,7 +216,7 @@ class HttpRequestParser {
 	}	
     }
 
-    static void parse_post_values (LexerString lexer, HttpRequest req) {
+    private static void parse_post_values (LexerString lexer, HttpRequest req) {
 	Word word;
 	if (!lexer.getNext (word) || word.str != HttpRequestTokens.COLON)
 	    throw new ReqSyntaxError (word);
@@ -220,7 +230,7 @@ class HttpRequestParser {
     }
 
     
-    static HttpParameter parse_value (LexerString file, HttpRequestTokens bre = HttpRequestTokens.AND) {
+    private static HttpParameter parse_value (LexerString file, HttpRequestTokens bre = HttpRequestTokens.AND) {
 	Word word;
 	file.getNext (word);
 	if (word.str == " " || word.str == bre) {
@@ -236,7 +246,7 @@ class HttpRequestParser {
     }
 
 
-    static HttpParameter numeric (LexerString file, Word word) {
+    private static HttpParameter numeric (LexerString file, Word word) {
 	bool dot = false;
 	foreach (it ; word.str) {
 	    if (it == '.') {		
@@ -255,7 +265,7 @@ class HttpRequestParser {
 	}	
     }        
     
-    static void parse_host (LexerString lexer, ref HttpRequest req) {
+    private static void parse_host (LexerString lexer, ref HttpRequest req) {
 	Word addr, port, ign;
 	lexer.getNext (ign);
 	lexer.getNext (addr);
@@ -265,7 +275,7 @@ class HttpRequestParser {
 	req.host_port = port.str;
     }
     
-    static void parse_user (LexerString lexer, ref HttpRequest req) {
+    private static void parse_user (LexerString lexer, ref HttpRequest req) {
 	Word suite, ign;
 	string total;
 	lexer.getNext (ign);
@@ -283,7 +293,7 @@ class HttpRequestParser {
 	req.user_agent = total;
     }
 
-    static void parse_accept (LexerString lexer, ref HttpRequest req) {
+    private static void parse_accept (LexerString lexer, ref HttpRequest req) {
 	Word next, ign;
 	lexer.removeSkip ("\n");
 	lexer.removeSkip ("\r");
@@ -300,7 +310,7 @@ class HttpRequestParser {
 	req.file_accepted = total;
     }
 
-    static void parse_language (LexerString lexer, ref HttpRequest req) {
+    private static void parse_language (LexerString lexer, ref HttpRequest req) {
 	Word next, ign;
 	lexer.removeSkip ("\n");
 	lexer.removeSkip ("\r");
@@ -317,7 +327,7 @@ class HttpRequestParser {
 	req.languages = total;
     }
 
-    static void parse_encoding (LexerString lexer, ref HttpRequest req) {
+    private static void parse_encoding (LexerString lexer, ref HttpRequest req) {
 	Word next, ign;
 	lexer.removeSkip ("\n");
 	lexer.removeSkip ("\r");
@@ -334,7 +344,7 @@ class HttpRequestParser {
 	req.encoding = total;
     }
 
-    static void parse_connection (LexerString lexer, ref HttpRequest req) {
+    private static void parse_connection (LexerString lexer, ref HttpRequest req) {
 	Word next, ign;
 	lexer.getNext (ign);
 	lexer.getNext (next);

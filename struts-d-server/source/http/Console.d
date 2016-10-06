@@ -20,7 +20,7 @@ class Console : Thread {
     }
     
     void onBegin () {
-	Log.instance.add_info ("Console start");
+	Log.instance.addInfo ("Console start");
 	this.startRoutine ();
     }
 
@@ -42,7 +42,7 @@ class Console : Thread {
 
     void killCom (string [] data) {
 	if (data.length > 1 && (data[1] == "-h" || data[1] == "--help")) {
-	    Log.instance.add_info ("kill [-s] [-a name] : this will kill the server or an application (based on its name)");
+	    Log.instance.addInfo ("kill [-s] [-a name] : this will kill the server or an application (based on its name)");
 	} else {
 	    if (data.length > 1 && data[1] == "-a") {
 		//TODO kill application
@@ -61,9 +61,9 @@ class Console : Thread {
     
     void deployCom (string[] data) {
 	if (data.length > 1 && (data[1] == "-h" || data[1] == "--help")) {
-	    Log.instance.add_info ("deploy [-a] name : this will deploy or redeploy an application (based on its name)");
+	    Log.instance.addInfo ("deploy [-a] name : this will deploy or redeploy an application (based on its name)");
 	} else if (data.length == 1) {
-	    Log.instance.add_info ("deploy [-a] name : this will deploy or redeploy an application (based on its name)");
+	    Log.instance.addInfo ("deploy [-a] name : this will deploy or redeploy an application (based on its name)");
 	} else {
 	    if (data.length > 1) {
 		string path = data[1];
@@ -73,11 +73,11 @@ class Console : Thread {
     }    
 	    
     void notFoundCom (string [] data) {
-	Log.instance.add_info ("Commande introuvable " ~ data[0]);
+	Log.instance.addInfo ("Commande introuvable " ~ data[0]);
     }
     
     void onEnd () {
-	Log.instance.add_info ("Console stop");
+	Log.instance.addInfo ("Console stop");
     }
     
     private void run () {	

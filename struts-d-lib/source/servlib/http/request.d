@@ -1,5 +1,7 @@
 module servlib.http.request;
 
+/// Module d'inclusion du superModule requestmod
+
 public import servlib.http.requestmod.HttpRequest;
 public import servlib.http.requestmod.HttpRequestParser;
 public import servlib.http.requestmod.HttpUrl;

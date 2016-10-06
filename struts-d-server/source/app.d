@@ -6,12 +6,12 @@ import servlib.utils.exception;
 import servlib.utils.Log, servlib.control.Controller;
 import servlib.application.Application;
 import servlib.utils.SoLoader;
-import servlib.utils.XMLoader;
+import servlib.utils.xml;
 
 void main (string[] args) {
     writeln (" ## Prototype de serveur ## ");
     Option opt = Option.instance;
-    Log.instance.add_info ("Lancement du serveur.");
+    Log.instance.addInfo ("Lancement du serveur.");
     
     try {
 

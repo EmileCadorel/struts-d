@@ -1,5 +1,5 @@
 module servlib.application.StrutsLoader;
-import servlib.utils.XMLoader;
+import servlib.utils.xml;
 import servlib.utils.exception;
 import servlib.control.ControllerContainer;
 import std.stdio;

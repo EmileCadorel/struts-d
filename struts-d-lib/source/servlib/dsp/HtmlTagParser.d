@@ -1,5 +1,5 @@
 module servlib.dsp.HtmlTagParser;
-import servlib.utils.XMLoader;
+import servlib.utils.xml;
 
 class HtmlTagParser {
     abstract Balise execute (Balise element);

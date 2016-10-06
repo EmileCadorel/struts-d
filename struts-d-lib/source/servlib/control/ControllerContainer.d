@@ -1,7 +1,7 @@
 module servlib.control.ControllerContainer;
 import servlib.control.Controller;
 import servlib.utils.Option;
-import servlib.utils.XMLoader;
+import servlib.utils.xml;
 import servlib.utils.Singleton;
 
 /**

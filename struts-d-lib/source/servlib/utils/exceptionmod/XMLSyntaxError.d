@@ -4,7 +4,9 @@ import servlib.utils.lexer;
 import servlib.utils.Log;
 import std.outbuffer, std.conv;
 
-
+/**
+ Erreur de syntaxe dans une fichier XML
+*/
 class XMLSyntaxError : StrutsException {
 
     string RESET = "\u001B[0m";
@@ -38,7 +40,7 @@ class XMLSyntaxError : StrutsException {
 	    buf.write ("\n");
 	}
 	msg = buf.toString();
-	Log.instance.add_err (msg);
+	Log.instance.addError (msg);
     }
 
 }

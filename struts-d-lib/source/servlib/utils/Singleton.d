@@ -1,5 +1,9 @@
 module servlib.utils.Singleton;
 
+/**
+ mixin permettant a une classe de devenir Singleton
+ Securise entre Thread
+ */
 mixin template Singleton (T) {
 
     static ref T instance () {

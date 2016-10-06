@@ -7,26 +7,17 @@ import std.stdio;
 import core.stdc.stdlib;
 import core.sys.posix.dlfcn;
 import servlib.utils.Log;
+import servlib.utils.exception;
 
-
-class SoError : Exception {
-    this (string name, string data) {
-	super ("");
-	OutBuffer buf = new OutBuffer;
-	buf.write ("Chargement de ");
-	buf.write (name);
-	buf.write (" impossible ~> \n");
-	buf.write (data);
-	msg = buf.toString ();
-    }
-    
-    override string toString () {
-	return msg;
-    }    
-}
-
+/**
+ Charge une shared lib, et lance le chargement de controller
+ */
 class SoLoader {
 
+    /**
+     Params:
+     name, le path du .so
+     */
     void load (string name) {
 	auto it = (name in alls);
 	if (it !is null) {
@@ -35,7 +26,7 @@ class SoLoader {
 	void * lh = dlopen (name.ptr, RTLD_LAZY);
 	if (!lh)
 	    throw new SoError (name, to!string (dlerror ()));
-	Log.instance.add_info ("Dll open : ", name);
+	Log.instance.addInfo ("Dll open : %s", name);
 	void function(ControllerTable) fn = cast(void function (ControllerTable)) dlsym (lh, LOAD_FUN.ptr);
 	auto error = dlerror ();
 	if (error) throw new SoError (name, to!string(error));
@@ -43,9 +34,12 @@ class SoLoader {
 	alls [name] = (lh);
     }
 
+    /**
+     Ferme tout les .so et les runtime D lance par chacune d'entre elle.
+     */
     void stop () {
 	foreach (key, value ; alls) {
-	  Log.instance.add_info ("Close Dll : ", key);
+	  Log.instance.addInfo ("Close Dll : ", key);
 	    dlclose (value);
 	}
     }
@@ -53,16 +47,19 @@ class SoLoader {
     mixin Singleton!SoLoader;
 
     private {
+
 	static immutable string LOAD_FUN = "_D6struts9SoLinkage6Shared15loadControllersUC7servlib7control10Controller15ControllerTableZv";
 
 	this () {}
-	void* [string] alls;
 
+	void* [string] alls;
+	
 	void close (void * value) {
 	    dlclose (value);
 	}
 
 	~this() {
+	    stop ();
 	}
     }
 

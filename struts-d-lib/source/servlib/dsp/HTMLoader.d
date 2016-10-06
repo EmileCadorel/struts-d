@@ -1,6 +1,6 @@
 module servlib.dsp.HTMLoader;
 
-import servlib.utils.XMLoader;
+import servlib.utils.xml;
 import servlib.dsp.HtmlTagParser;
 
 class HTMLoader {

@@ -2,6 +2,9 @@ module servlib.http.requestmod.HttpUrl;
 import std.container, std.outbuffer, std.conv;
 import servlib.http.requestmod.HttpParameter;
 
+/**
+ Un url d'une requete HTTP
+ */
 class HttpUrl {
 
     this (Array!string path) {
@@ -13,10 +16,16 @@ class HttpUrl {
 	this._params = params;
     }
 
+    /**
+     Le path de la requete (mot par mot)
+     */
     ref Array!string path () {
 	return this._path;
     }
 
+    /**
+     Les parametre de la requete
+     */
     ref HttpParameter param (string name) {
 	auto it = (name in _params);
 	if (it !is null) return *it;
@@ -35,7 +44,10 @@ class HttpUrl {
     }
 
     private {
+	/// machin/true/fin
 	Array!string _path;
+
+	/// ... ?param=&param2=8
 	HttpParameter [string] _params;
     }
 }

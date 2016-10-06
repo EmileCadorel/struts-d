@@ -3,12 +3,21 @@ import servlib.http.requestmod.HttpParameter;
 import servlib.http.requestmod.HttpFile;
 import std.outbuffer, std.conv;
 
+/**
+ Enregistrement des information d'une requete POST
+*/
 class HttpPost {
 
+    /**
+     Retourne l'ensemble des parametre de la requete
+     */
     ref HttpParameter [string] params () {
 	return this._params;
     }
 
+    /**
+     Retourne l'ensemble des fichiers des la requete
+     */
     ref HttpFile [] files () {
 	return this._files;
     }
@@ -21,10 +30,11 @@ class HttpPost {
     }
     
     private {
-	
+	/// Les parametre de la requete
 	HttpParameter [string] _params;
-	HttpFile [] _files;
-	
+
+	/// Les fichiers de la requetes
+	HttpFile [] _files;	
     }
     
 }

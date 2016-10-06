@@ -1,7 +1,10 @@
 module servlib.utils.exceptionmod.ManifestError;
 import servlib.utils.exception;
-import servlib.utils.XMLoader;
+import servlib.utils.xml;
 
+/**
+ Erreur dans le manifest 
+ */
 class ManifestError : StrutsException {
 
     this (Balise balise) {

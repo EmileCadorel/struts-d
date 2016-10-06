@@ -6,11 +6,18 @@ import std.stdio, std.conv;
 import std.outbuffer;
 import std.string;
 import std.container;
-import std.file;
+import std.file, std.conv;
 import servlib.utils.lexermod.Word;
 
+/**
+ Lexer permettant le decoupage d'un fichier, a partir de token
+*/
 class LexerFile {
 
+    /**
+     Params:
+     fileName, le path du fichier a lire
+     */
     this(string fileName) {
 	try {
 	    this.filename = fileName;
@@ -24,17 +31,27 @@ class LexerFile {
 	}
     }
 
+    /**
+     Le path du fichier en cours de lecture
+     */
     string getFileName () {
 	return this.filename;
     }
 
-
+    /**
+     Params:
+     keys, les tokens qui vont couper le fichiers
+     */
     void setKeys (Array!string keys) {
 	foreach (string it ; keys) {
 	    this.keys.insertBack(it);
 	}
     }
 
+    /**
+     Params:
+     skip, les tokens qui vont etre ignore dans la lecture du fichier
+     */
     void setSkip(Array!string skip) {
 	this.skip.clear ();
 	foreach(string it ; skip) {
@@ -42,10 +59,23 @@ class LexerFile {
 	}
     }
 
+    /**
+     Ajoute un element de commentaire
+     Params:
+     beg, la chaine qui va definir un debut de commentaire
+     stop, la fin du commentaire
+     */
     void addComment (string beg, string stop) {
 	this.comment.insertBack(make!(Array!string)(beg, stop));
     }
 
+    /**
+     Retourne le mot suivant
+     Params:
+     ret, Le mot qui va etre renvoye par effet de bort
+     Return:
+     Un mot a ete lu, ou faux si EOF
+     */
     bool getNext(ref Word ret) {
 	Word word;
 	if(this.currentWord >= read.length() - 1) {
@@ -79,10 +109,19 @@ class LexerFile {
 	}
     }
 
+    /**
+     Params:
+     on, les commentaire doivent-ils etre pris en compte
+     */
     void setComments (bool on) {
 	commentsOn = on;
     }
 
+    /**
+     Enleve un element de la table des element ignore
+     Params:
+     which, l'element qui ne doit plus etre ignore
+     */
     void removeSkip (string which) {
 	auto aux = skip[];
 	skip.clear();
@@ -92,10 +131,23 @@ class LexerFile {
 	}
     }
 
+    /**
+     Reviens en arriere
+     Params:
+     nb, le nombre de mot a rembobiner
+     */
     void rewind(int nb = 1) {
 	currentWord -= nb;
     }
 
+    /**
+     Retourne le contenu d'une ligne en fonction de son numero
+     Params:
+     line, le numero de la ligne
+     line_str, la ligne a retourner par effet de bord
+     Return:
+     Faux, si EOF
+     */
     bool getLine(int line, ref string line_str) {
 	file.seek(0);
 	string cline = null;
@@ -104,8 +156,8 @@ class LexerFile {
 	else line_str = cline;
 	return true;
     }
-
-    bool getWord (ref Word word) {
+   
+    private bool getWord (ref Word word) {
 	ulong where = file.tell();
 	string line = file.readln();
 	if(file.eof() || line is null) return false;
@@ -142,30 +194,38 @@ class LexerFile {
 	return true;
     }
 
-    bool isSkip(in Word word) {
+    private bool isSkip(in Word word) {
 	foreach (string s ; skip) {
 	    if (word.str == s) return true;
 	}
 	return false;
     }
 
-    string isComment(in Word word) {
+    private string isComment(in Word word) {
 	foreach (Array!string s ; comment) {
 	    if (word.str == s[0]) return s[1];
 	}
 	return null;
     }
 
+    /**
+     Ajoute un element dans la table a ignore
+     Params:
+     name, l'element a ignore
+     */
     void addSkip (string name) {
 	skip.insertBack(name);
     }
 
+    /**
+     le fichier (les element lus et l'emplacement courant) formate dans une string
+     */
     string toStr () {
 	OutBuffer buf = new OutBuffer;
 	Array!ulong sizes;
 	foreach (word ; read) {
-	    buf.write(word.toStr ~ " ");
-	    sizes.insertBack( word.toStr.length + 1 );
+	    buf.write(word.toString ~ " ");
+	    sizes.insertBack( word.toString.length + 1 );
 	}
 	buf.write("\n");
 	foreach (it ; 0 .. currentWord + 1) {
@@ -175,22 +235,25 @@ class LexerFile {
 	return buf.toString;
     }
 
+    /**
+     Ferme le fichier
+     */
     ~this() {
 	file.close();
     }
 
-    //private:
-
-    string filename;
-    File file;
-    int line;
-    int column;
-    int currentWord;
-    bool commentsOn = true;
-    Array!string keys;
-    Array!string skip;
-    Array!(Array!string) comment;
-    Array!Word read;
+    private {
+	string filename;
+	File file;
+	int line;
+	int column;
+	int currentWord;
+	bool commentsOn = true;
+	Array!string keys;
+	Array!string skip;
+	Array!(Array!string) comment;
+	Array!Word read;
+    }
 }
 
 

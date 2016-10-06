@@ -10,7 +10,7 @@ import servlib.utils.Log;
 import servlib.control.Controller;
 import servlib.control.NotFoundController;
 import servlib.control.ControllerContainer;
-import servlib.utils.XMLoader;
+import servlib.utils.xml;
 import servlib.utils.Option;
 import servlib.utils.SoLoader;
 
@@ -32,7 +32,7 @@ class BaseDriver : HttpSession {
     override void on_begin (Address addr) {
 	try {
 	    this.client_addr = addr.toAddrString();
-	    Log.instance.add_info ("Connexion de ", this.client_addr);
+	    Log.instance.addInfo ("Connexion de ", this.client_addr);
 	    this.start_routine ();
 	} catch (Exception e) {
 	    writeln (e.toString());
@@ -40,7 +40,7 @@ class BaseDriver : HttpSession {
     }
 
     override void on_end () {
-      Log.instance.add_info ("Deconnexion de ", this.client_addr);
+      Log.instance.addInfo ("Deconnexion de ", this.client_addr);
     }
 
     void start_routine () {
@@ -48,10 +48,10 @@ class BaseDriver : HttpSession {
 	int status_recv = this.recv_request (data);
 
 	if (status_recv < 0) {
-	    Log.instance.add_err (this.socket.getErrorText());
+	    Log.instance.addError (this.socket.getErrorText());
 	} else {
 	    HttpRequest request = this.toRequest (data);
-	    Log.instance.add_info (this.client_addr, " : ", to!string(request.http_method), " ", request.url.toString());
+	    Log.instance.addInfo (this.client_addr, " : ", to!string(request.http_method), " ", request.url.toString());
 
 	    string controller_name;
 	    HttpUrl url = request.url;
@@ -178,7 +178,7 @@ class BaseDriver : HttpSession {
     void send_response (HttpResponse response) {
 	auto error = this.socket.send (response.enpack());
 	if (error == Socket.ERROR)
-	  Log.instance.add_err ("Send response : ", this.socket.getErrorText());
+	  Log.instance.addError ("Send response : ", this.socket.getErrorText());
     }
 
     private {

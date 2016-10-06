@@ -4,8 +4,18 @@ import servlib.http.request, std.string;
 import std.stdio, std.container;
 import servlib.utils.exception, std.conv;
 
+/**
+ Parse la partie POST d'une requete HTTP
+*/
 class HttpPostParser {
 
+    /**
+     Params:
+     data, la chaine contenant les information du contenu de la requete
+     boundary, le boundary utilise pour separe les fichier (peut etre null)
+     Return:
+     Les elements dans une HttpPost
+     */
     static HttpPost parse (string data, string boundary) {
 	LexerString lexer = new LexerString (data);
 	lexer.setKeys (make!(Array!string)(":", ",", "?", "#", "=", "&", " ", "\n", "\r", ";", "\""));
@@ -23,8 +33,8 @@ class HttpPostParser {
 	}
 	return ret;
     }
-
-    static void parse_file (LexerString file, ref HttpPost post, string boundary) {
+    
+    private static void parse_file (LexerString file, ref HttpPost post, string boundary) {
 	Word word;
 	HttpFile h_file = new HttpFile;
 	while (true) {
@@ -42,7 +52,7 @@ class HttpPostParser {
 	}
     }
 
-    static void parse_content_disposition (LexerString file, ref HttpFile post) {
+    private static void parse_content_disposition (LexerString file, ref HttpFile post) {
 	Word word;
 	if (!file.getNext (word) || word.str != HttpRequestTokens.COLON)	    
 	    throw new ReqSyntaxError (word);
@@ -72,7 +82,7 @@ class HttpPostParser {
 	file.setSkip (make!(Array!string) (" ", "\n", "\r"));
     }
 
-    static void parse_content_type (LexerString file, ref HttpFile post) {
+    private static void parse_content_type (LexerString file, ref HttpFile post) {
 	Word word;
 	if (!file.getNext (word) || word.str != HttpRequestTokens.COLON)
 	    throw new ReqSyntaxError (word);
@@ -96,7 +106,7 @@ class HttpPostParser {
 	}
     }
 
-    static void parse_suite (LexerString file, char[] suite) {
+    private static void parse_suite (LexerString file, char[] suite) {
 	Word word;
 	for (ulong i = 0; i < suite.length;) {
 	    if (!file.getNext (word)) throw new ReqSyntaxError (word);
@@ -107,7 +117,7 @@ class HttpPostParser {
 	}
     }
     
-    static void parse_to_bound (LexerString file, ref HttpFile post, string bound) {
+    private static void parse_to_bound (LexerString file, ref HttpFile post, string bound) {
 	Word word;
 	file.setSkip (make!(Array!string) ());
 	byte[] total;
@@ -126,7 +136,7 @@ class HttpPostParser {
 	file.setSkip (make!(Array!string) (" ", "\n", "\r"));
     }
         
-    static HttpParameter parse_value_with_quot (LexerString file) {
+    private static HttpParameter parse_value_with_quot (LexerString file) {
 	Word word;	
 	if(!file.getNext (word) || word.str != "\"")
 	    throw new ReqSyntaxError (word);
@@ -144,7 +154,7 @@ class HttpPostParser {
     }
 
     
-    static void parse_post_values (LexerString file, ref HttpPost post) {
+    private static void parse_post_values (LexerString file, ref HttpPost post) {
 	Word word;
 	HttpParameter[string] params;
 	while (true) {
@@ -161,8 +171,8 @@ class HttpPostParser {
 	}
 	post.params = params;
     }
-
-    static HttpParameter parse_value (LexerString file, HttpRequestTokens bre = HttpRequestTokens.AND) {
+    
+    private static HttpParameter parse_value (LexerString file, HttpRequestTokens bre = HttpRequestTokens.AND) {
 	Word word;
 	file.getNext (word);
 	if (word.str == " " || word.str == bre) {
@@ -177,8 +187,7 @@ class HttpPostParser {
 	}
     }
 
-
-    static HttpParameter numeric (LexerString file, Word word) {
+    private static HttpParameter numeric (LexerString file, Word word) {
 	bool dot = false;
 	foreach (it ; word.str) {
 	    if (it == '.') {		
@@ -196,9 +205,7 @@ class HttpPostParser {
 	    return HttpParameter (HttpParamEnum.INT, [to!int (word.str)]);
 	}	
     }        
-
-    
-    
+        
     private this () {}
 
 }

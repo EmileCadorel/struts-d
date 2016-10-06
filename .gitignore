@@ -9,3 +9,5 @@ struts-d
 *.a
 *.so
 *.zip
+#*
+.#*

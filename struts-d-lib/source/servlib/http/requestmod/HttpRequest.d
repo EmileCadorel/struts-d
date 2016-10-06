@@ -2,6 +2,9 @@ module servlib.http.requestmod.HttpRequest;
 import std.outbuffer, std.conv;
 import servlib.http.request;
 
+/**
+ Le methode utilise par la requete
+ */
 enum HttpMethod : string {
     OPTIONS = "OPTIONS",
 	GET = "GET",
@@ -13,71 +16,115 @@ enum HttpMethod : string {
 	CONNECT = "CONNECT"
 	}
 
+/**
+ Une requete Http
+ */
 class HttpRequest {
 
     this () {
     }
 
-    void http_method (HttpMethod type) {
-	this.type = type;
-    }
-
-    HttpMethod http_method () {
+    /**
+     La methode http utilise
+     */
+    ref HttpMethod http_method () {
 	return this.type;
     }
 
+    /**
+     l'url de la requete
+     */
     ref HttpUrl url () {
 	return this._url;
     }
 
+    /**
+     le protocole de la requete
+     */
     ref string proto() {
 	return this._proto;
     }
 
+    /**
+     l'adresse du host
+     */
     ref string host_addr () {
 	return this._host_addr;
     }
 
+    /**
+     le port du host
+     */
     ref string host_port () {
 	return this._host_port;
     }
 
+    /**
+     Les langues demande
+     */
     ref string [] languages () {
 	return this._language;
     }
 
+    /**
+     l'explorateur utilise
+     */
     ref string user_agent () {
 	return this._user_agent;
     }
 
+    /**
+     l'information de connection
+     */
     ref string connection () {
 	return this._connection;
     }
 
+    /**
+     l'encodage pris en charge
+     */
     ref string [] encoding () {
 	return this._encoding;
     }
 
+    /**
+     le type de fichier pris en charge
+     */
     ref string [] file_accepted () {
 	return this._file_accepted;
     }
 
+    /**
+     cf: rfc requete HTTP
+     */
     ref string referer () {
 	return this._referer;
     }
 
+    /**
+     cf: rfc requete HTTP
+    */
     ref string cache_control () {
 	return this._cache_control;
     }
 
+    /**
+     cf: rfc requete HTTP
+    */
     ref HttpParameter [string] content_type () {
 	return this._content_type;
     }
     
+    /**
+     Les elements contenu dans la requetes
+     */
     ref HttpPost post_value () {
 	return this._post_value;
     }
 
+    /**
+     Les cookies
+     */
     ref HttpParameter [string] cookies () {
 	return this._cookies;
     }

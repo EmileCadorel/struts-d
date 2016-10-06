@@ -1,5 +1,5 @@
 <manifest>
-  <lib path="bin/libapp1.so"/>
+  <lib path="libapp1.so"/>
   <struts path="struts.xml"/>
 </manifest>
  
