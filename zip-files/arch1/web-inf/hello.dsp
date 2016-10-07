@@ -6,10 +6,10 @@
 <dsp:if test="1 == 1">
 <p>Hello World</p>
 </dsp:if>
-<dsp:if test="(12 + 2) == 13">
+<dsp:if test="(10 + (2 + 1.2 - 0.1)) == 13.1">
 <p>Test 2</p>
 </dsp:if>
-<dsp:if test="1 != 2">
+<dsp:if test="1 != 1">
 <p>Bouh</p>
 </dsp:if>
 </body>

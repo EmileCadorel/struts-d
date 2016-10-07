@@ -7,7 +7,7 @@ import servlib.control.Session;
 import servlib.utils.Log;
 import std.container, std.algorithm;
 
-import std.conv;
+import std.conv, std.stdio;
 import std.container, std.traits;
 
 class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
@@ -24,23 +24,33 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
       this.right = right;
     }
 
+    Constante getValue (){
+      return left.opTest(op,right);
+    }
+
     Constante opTest (Operator op, Expression right){
-      return null;
+      switch(op){
+      case Operator.PLUS:
+	return getValue().opPlus(right.getValue());
+      case Operator.SUB:
+	return getValue().opSub(right.getValue());
+      default:
+	return null;
+      }
     }    
     
     bool isTrue (Session session) {
-      auto l = left.calcul();
-      auto r = right.calcul();
-      Log.instance.addError(toString());
-      if (l.opTest (op, r))
-	return true;
-      return false;
-    }
-
-    Constante calcul () {
-      Constante left = left.calcul();
-      Constante right = right.calcul();
-      return null;
+      string leftVal = left.getValue().val;
+      string rightVal = right.getValue().val;
+      writeln("result: " ~ leftVal ~ " " ~ cast(string) op ~ " " ~ rightVal);
+      switch(op){
+      case Operator.EQUAL:
+	return leftVal == rightVal;	
+      case Operator.NOTEQ:	
+	return leftVal != rightVal;
+      default:
+	return false;
+      }
     }
 
     override string toString () {
@@ -52,56 +62,56 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
   class Constante : Expression {
     string val;
 
-    override bool opEquals (Object other_) {
-      Constante other = cast(Constante)other_;
-      if (other !is null){	
-	return val == other.val;
-      }
-      return false;
+    Constante opPlus(Constante other){
+      Constante cnst = new Constante();
+      cnst.val = val ~ other.val;
+      return cnst;
     }
 
-    Constante opBinary (string s = "+") (Object obj) {
-      return opPlus(obj);
-    }
-
-    Constante opPlus (Object obj) {
-      auto obj_ = cast(Constante)obj;
-      if(obj_ !is null){
-	Constante newCnst = new Constante();
-	newCnst.val = val ~ obj_.val;
-	return newCnst;
-      }
+    Constante opSub(Constante other){
       return null;
     }
-
-    override Constante calcul () {
+    
+    override Constante getValue() {
       return this;
     }
-    /*
-    override string toString () {
-      return val;
-      }*/
   }
   
   class Int : Constante {    
     this (string val) {
       this.val = val;
     }
-
-    override Constante opTest(Operator op, Expression right) {
-      //Verifie this op right existe, retourne vrai si this op right != 0
-      return null;
-    }
     
-    override Constante opPlus (Object obj) {
-      auto obj_ = cast(Int)obj;
-      if(obj_ !is null){
-	int val_ = to!int(val) + to!int(obj_.val);
-	return new Int(to!string(val_));
+    override Constante opPlus(Constante other){
+      Int myInt = cast(Int)other;
+      if(myInt !is null){
+	int res = to!int(val)+to!int(myInt.val);
+	return new Int(to!string(res));
       }else{
-	return null;
+	Float myFloat = cast(Float)other;
+	if(myFloat !is null){
+	  float res = to!int(val)+to!float(myFloat.val);
+	  return new Float(to!string(res));
+	}
       }
+      return null;      
     }
+
+    override Constante opSub (Constante other) {
+      Int myInt = cast(Int) other;
+      if (myInt !is null) {
+	int res = to!int (val) - to!int (myInt.val);
+	return new Int (to!string (res));
+      } else {
+	Float myFloat = cast(Float) other;
+	if (myFloat !is null) {
+	  float res = to!int (val) - to!float (myFloat.val);
+	  return new Float (to!string (res));
+	}
+      }
+      return null;      
+    } 
+    
   }
 
   class Var : Constante {
@@ -109,10 +119,51 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
       this.val = val;
     }
   }
+
+  class Bool : Constante {
+    this (string val) {
+      this.val = val;
+    }
+
+    
+    override bool isTrue (Session session) {
+      return to!bool (val);
+    }
+  }
   
   class Float : Constante {
     this (string val) {
       this.val = val;
+    }
+    
+    override Constante opPlus (Constante other) {
+      Float myFloat = cast(Float) other;
+      if (myFloat !is null) {
+	float res = to!float (val) + to!float (myFloat.val);
+	return new Float (to!string (res));
+      } else {
+	Int myInt = cast(Int) other;
+	if (myInt !is null) {
+	  float res = to!float (val) + to!int (myInt.val);
+	  return new Float (to!string (res));
+	}
+      }
+      return null;
+    }
+    
+    override Constante opSub (Constante other) {
+      Float myFloat = cast(Float) other;
+      if (myFloat !is null) {
+	float res = to!float (val) - to!float (myFloat.val);
+	return new Float (to!string (res));
+      } else {
+	Int myInt = cast(Int) other;
+	if (myInt !is null) {
+	  float res = to!float (val) - to!int (myInt.val);
+	  return new Float (to!string (res));
+	}
+      }
+      return null;      
     }
   }
 
@@ -137,7 +188,7 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
   }
   
   override Balise[] execute (Balise element, Balise[] function (Balise, Session) callBack, Session session) {
-    Log.instance.addError("HtmlIf execute");
+    Log.instance.addInfo("HtmlIf execute");
     auto it = element["test"];
     if (it !is null){
       LexerString lex = new LexerString (it);
@@ -167,7 +218,7 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
       lex.getNext (word);
       auto op = find ([Operator.AND, Operator.OR, Operator.EQUAL, Operator.NOTEQ, Operator.SUP, Operator.INF, Operator.SUP_E, Operator.INF_E], word.str);
       if (op != []) {
-	Expression right = low (lex);
+	Expression right = expression (lex);
 	return new Expression (op[0], left, right);
       } else {
 	lex.rewind ();
@@ -181,7 +232,7 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
       lex.getNext (word);
       auto op = find ([Operator.PLUS, Operator.SUB], word.str);
       if (op != []) {
-	Expression right = high (lex);
+	Expression right = low (lex);
 	return new Expression (op[0], left, right);
       } else {
 	lex.rewind ();
@@ -195,7 +246,7 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
       lex.getNext (word);
       auto op = find ([Operator.MUL, Operator.DIV], word.str);
       if (op != []) {
-	Expression right = pth (lex);
+	Expression right = high (lex);
 	return new Expression (op[0], left, right);
       } else {
 	lex.rewind ();
@@ -209,7 +260,7 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
       if (word.str == Operator.PARO) {
 	Expression exp = expression (lex);
 	lex.getNext (word);
-	if (word.str != Operator.PARC) assert (false, "TODO, erreur de syntaxe");
+	if (word.str != Operator.PARC) assert (false, "TODO, erreur de syntaxe " ~ word.str );
 	return exp;
       } else {
 	lex.rewind ();
