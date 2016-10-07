@@ -28,26 +28,34 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
       return left.opTest(op,right);
     }
 
-    Constante opTest (Operator op, Expression right){
-      switch(op){
+    Constante opTest (Operator op, Expression right) {
+      switch (op) {
       case Operator.PLUS:
 	return getValue().opPlus(right.getValue());
-      case Operator.SUB:
+      case Operator.SUB:	
 	return getValue().opSub(right.getValue());
+      case Operator.MUL:	
+	return getValue().opMul(right.getValue());
+      case Operator.DIV:	
+	return getValue().opDiv(right.getValue());
       default:
-	return null;
+	assert (false,"Fatal Erreur opTest, Operation Not Defined " ~ cast(string) op);
       }
     }    
     
     bool isTrue (Session session) {
-      string leftVal = left.getValue().val;
-      string rightVal = right.getValue().val;
-      writeln("result: " ~ leftVal ~ " " ~ cast(string) op ~ " " ~ rightVal);
+      Constante leftVal = left.getValue();
+      Constante rightVal = right.getValue();
+      writeln("result: " ~ leftVal.val ~ " " ~ cast(string) op ~ " " ~ rightVal.val);
       switch(op){
       case Operator.EQUAL:
-	return leftVal == rightVal;	
+	return leftVal.val == rightVal.val;	
       case Operator.NOTEQ:	
-	return leftVal != rightVal;
+	return leftVal.val != rightVal.val;
+      case Operator.INF:
+	return leftVal.opInf (rightVal).isTrue(session);
+      case Operator.SUP:        
+	return leftVal.opSup (rightVal).isTrue(session);
       default:
 	return false;
       }
@@ -62,14 +70,34 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
   class Constante : Expression {
     string val;
 
-    Constante opPlus(Constante other){
-      Constante cnst = new Constante();
-      cnst.val = val ~ other.val;
-      return cnst;
+    this(){}
+
+    this(string val){
+      this.val = val;
     }
 
-    Constante opSub(Constante other){
-      return null;
+    Constante opPlus (Constante other){
+      return new Constante(val ~ other.val);
+    }
+
+    Constante opSub (Constante other){      
+       assert (false,"Fatal Erreur Constance opSub, Operation Not Defined ");
+    }
+
+    Constante opMul (Constante other){      
+	assert (false,"Fatal Erreur Constance opMul, Operation Not Defined ");
+    }
+
+    Constante opDiv (Constante other){      
+	assert (false,"Fatal Erreur Constance opDiv, Operation Not Defined ");
+    }
+
+    Constante opSup (Constante other){      
+	assert (false,"Fatal Erreur Constance opSup, Operation Not Defined ");
+    }
+
+    Constante opInf (Constante other){      
+	assert (false,"Fatal Erreur Constance opInf, Operation Not Defined ");
     }
     
     override Constante getValue() {
@@ -81,36 +109,64 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
     this (string val) {
       this.val = val;
     }
-    
-    override Constante opPlus(Constante other){
-      Int myInt = cast(Int)other;
-      if(myInt !is null){
-	int res = to!int(val)+to!int(myInt.val);
-	return new Int(to!string(res));
-      }else{
-	Float myFloat = cast(Float)other;
-	if(myFloat !is null){
-	  float res = to!int(val)+to!float(myFloat.val);
-	  return new Float(to!string(res));
-	}
+
+    this(int val){
+      this.val = to!string(val);
+    }
+
+    override Constante opPlus (Constante other) {
+      if (auto t = cast(Int) other) {
+	return new Int (to!int (val) + to!int (t.val));
+      } else if (auto t = cast(Float) other) {	
+	return new Float (to!int (val) + to!float (t.val));
       }
-      return null;      
+      return null;
     }
 
     override Constante opSub (Constante other) {
-      Int myInt = cast(Int) other;
-      if (myInt !is null) {
-	int res = to!int (val) - to!int (myInt.val);
-	return new Int (to!string (res));
-      } else {
-	Float myFloat = cast(Float) other;
-	if (myFloat !is null) {
-	  float res = to!int (val) - to!float (myFloat.val);
-	  return new Float (to!string (res));
-	}
+      if(auto t = cast(Int) other){
+	return new Int (to!int (val) - to!int (t.val));
+      }else if(auto t = cast(Float)other){	
+	return new Float (to!int (val) - to!float (t.val));
       }
-      return null;      
-    } 
+      return null;
+    }
+
+    override Constante opMul (Constante other) {
+      if (auto t = cast(Int) other) {
+	return new Int (to!int (val) * to!int (t.val));
+      } else if (auto t = cast(Float)other) {	
+	return new Float (to!int (val) * to!float (t.val));
+      }
+      return null;
+    }
+
+    override Constante opDiv (Constante other) {
+      if (auto t = cast(Int) other) {
+	return new Int (to!int (val) / to!int (t.val));
+      } else if (auto t = cast(Float) other) {	
+	return new Float (to!int (val) / to!float (t.val));
+      }
+      return null;
+    }
+
+    override Constante opSup (Constante other) {
+      if (auto t = cast(Int) other) {
+	return new Bool (to!int (val) > to!int (t.val));
+      } else if (auto t = cast(Float) other) {	
+	return new Bool (to!int (val) > to!float (t.val));
+      }
+      return null;
+    }
+
+    override Constante opInf (Constante other) {
+      if (auto t = cast(Int) other) {
+	return new Bool (to!int (val) < to!int (t.val));
+      } else if (auto t = cast(Float) other) {	
+	return new Bool (to!int (val) < to!float (t.val));
+      }
+      return null;
+    }
     
   }
 
@@ -125,6 +181,33 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
       this.val = val;
     }
 
+    this(bool val){
+      this.val = to!string(val);
+    }
+
+    override Constante opPlus (Constante other){
+       assert (false,"Fatal Erreur Bool opPlus, Operation Not Defined ");
+    }
+
+    override Constante opSub (Constante other){      
+       assert (false,"Fatal Erreur Bool opSub, Operation Not Defined ");
+    }
+
+    override Constante opMul (Constante other){      
+	assert (false,"Fatal Erreur Bool opMul, Operation Not Defined ");
+    }
+
+    override Constante opDiv (Constante other){      
+	assert (false,"Fatal Erreur Bool opDiv, Operation Not Defined ");
+    }
+
+    override Constante opSup (Constante other){      
+	assert (false,"Fatal Erreur Bool opSup, Operation Not Defined ");
+    }
+
+    override Constante opInf (Constante other){      
+	assert (false,"Fatal Erreur Bool opInf, Operation Not Defined ");
+    }
     
     override bool isTrue (Session session) {
       return to!bool (val);
@@ -135,35 +218,63 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
     this (string val) {
       this.val = val;
     }
-    
-    override Constante opPlus (Constante other) {
-      Float myFloat = cast(Float) other;
-      if (myFloat !is null) {
-	float res = to!float (val) + to!float (myFloat.val);
-	return new Float (to!string (res));
-      } else {
-	Int myInt = cast(Int) other;
-	if (myInt !is null) {
-	  float res = to!float (val) + to!int (myInt.val);
-	  return new Float (to!string (res));
-	}
-      }
-      return null;
+
+    this (float val) {
+      this.val = to!string(val);
     }
     
-    override Constante opSub (Constante other) {
-      Float myFloat = cast(Float) other;
-      if (myFloat !is null) {
-	float res = to!float (val) - to!float (myFloat.val);
-	return new Float (to!string (res));
-      } else {
-	Int myInt = cast(Int) other;
-	if (myInt !is null) {
-	  float res = to!float (val) - to!int (myInt.val);
-	  return new Float (to!string (res));
-	}
+    override Constante opPlus (Constante other) {
+      if (auto t = cast(Float) other) {
+	return new Float (to!float (val) + to!float (t.val));
+      } else if (auto t = cast(Int) other) {	
+	return new Float (to!float (val) + to!int (t.val));
       }
-      return null;      
+      assert (false,"Fatal Erreur Float opPlus, NullValue or Type Not Supported ");
+    }
+
+    override Constante opSub (Constante other) {
+      if (auto t = cast(Float) other) {
+	return new Float (to!float (val) - to!float (t.val));
+      } else if (auto t = cast(Int) other) {	
+	return new Float (to!float (val) - to!int (t.val));
+      }
+      assert (false,"Fatal Erreur Float opSub, NullValue or Type Not Supported ");
+    }
+
+    override Constante opMul (Constante other) {
+      if (auto t = cast(Float) other) {
+	return new Float (to!float (val) * to!float (t.val));
+      } else if (auto t = cast(Int) other) {	
+	return new Float (to!float (val) * to!int (t.val));
+      }
+      assert (false,"Fatal Erreur Float opMul, NullValue or Type Not Supported ");
+    }
+
+    override Constante opDiv (Constante other) {
+      if (auto t = cast(Float) other) {
+	return new Float (to!float (val) / to!float (t.val));
+      } else if (auto t = cast(Int) other) {	
+	return new Float (to!float (val) / to!int (t.val));
+      }
+      assert (false,"Fatal Erreur Float opDiv, NullValue or Type Not Supported ");
+    }
+
+        override Constante opSup (Constante other) {
+      if (auto t = cast(Float) other) {
+	return new Bool (to!float (val) > to!float (t.val));
+      } else if (auto t = cast(Int) other) {	
+	return new Bool (to!float (val) > to!int (t.val));
+      }
+      assert (false,"Fatal Erreur Float opSup, NullValue or Type Not Supported ");
+    }
+
+    override Constante opInf (Constante other) {
+      if (auto t = cast(Float) other) {
+	return new Bool (to!float (val) < to!float (t.val));
+      } else if (auto t = cast(Int) other) {	
+	return new Bool (to!float (val) < to!int (t.val));
+      }
+      assert (false,"Fatal Erreur Float opInf, NullValue or Type Not Supported ");
     }
   }
 
