@@ -3,8 +3,16 @@ import std.stdio;
 import struts.control;
 
 class Home : Controller!Home {
+
+    string test;
+
+    int test2;    
+
     override string execute () {
-	return "<h1>HOME</h1>";
+	
+	if (test is null)
+	    return "<h1>HOME</h1>";
+	else return "<h1>Home : " ~ test ~ "</h1>";
     }   
 }
 

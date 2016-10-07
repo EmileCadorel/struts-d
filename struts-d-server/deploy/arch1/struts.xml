@@ -4,7 +4,7 @@
   </action>
 
   <action name="search" class="main.Search">
-    <result>Success</result>
+    <result name="sucess">machin.dsp</result>
   </action>
 </struts>
 
