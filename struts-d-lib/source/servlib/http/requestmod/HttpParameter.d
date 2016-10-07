@@ -23,6 +23,10 @@ struct HttpParameter {
 	return this._type;
     }
 
+    bool Is (HttpParamEnum type)  {
+	return this._type == type;
+    }
+    
     /**
      Les donne du parametre
      */
