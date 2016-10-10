@@ -7,13 +7,13 @@ import servlib.control.Session;
 import std.stdio;
 
 class HtmlTagParser {
-  abstract Balise[] execute (Balise, Balise[] function (Balise, Session), Session);
+  abstract Balise[] execute (Balise, Balise[] delegate (Balise, Session), Session);
 }
 
 template HtmlTPInsert (string id, T : HtmlTagParser) {
   static this () {
-    Log.instance.addInfo ("Ajout du parser de balise : " ~ T.classinfo.name);
-    HTMLoader.addParser (id, new T);
+    writeln ("Ajout du parser de balise : " ~ T.classinfo.name);
+    HTMLoader.instance.addParser (id, new T);
   }
 }
 
