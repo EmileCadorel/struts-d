@@ -24,38 +24,46 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
       this.right = right;
     }
 
-    Constante getValue (){
-      return left.opTest(op,right);
+    Constante getValue (Session session){
+      return left.opTest(op,right,session);
     }
 
-    Constante opTest (Operator op, Expression right) {
+    Constante opTest (Operator op, Expression right, Session session) {
       switch (op) {
       case Operator.PLUS:
-	return getValue().opPlus(right.getValue());
+	return getValue(session).opPlus (right.getValue(session));
       case Operator.SUB:	
-	return getValue().opSub(right.getValue());
+	return getValue(session).opSub (right.getValue(session));
       case Operator.MUL:	
-	return getValue().opMul(right.getValue());
+	return getValue(session).opMul (right.getValue(session));
       case Operator.DIV:	
-	return getValue().opDiv(right.getValue());
+	return getValue(session).opDiv (right.getValue(session));
+      case Operator.AND:
+	return getValue(session).opAnd (right.getValue(session));
+      case Operator.OR:
+	return getValue(session).opAnd (right.getValue(session));
       default:
 	assert (false,"Fatal Erreur opTest, Operation Not Defined " ~ cast(string) op);
       }
     }    
     
     bool isTrue (Session session) {
-      Constante leftVal = left.getValue();
-      Constante rightVal = right.getValue();
+      Constante leftVal = left.getValue(session);
+      Constante rightVal = right.getValue(session);
       writeln("result: " ~ leftVal.val ~ " " ~ cast(string) op ~ " " ~ rightVal.val);
-      switch(op){
+      switch (op) {
       case Operator.EQUAL:
 	return leftVal.val == rightVal.val;	
       case Operator.NOTEQ:	
 	return leftVal.val != rightVal.val;
       case Operator.INF:
-	return leftVal.opInf (rightVal).isTrue(session);
+	return leftVal.opInf (rightVal).isTrue();
       case Operator.SUP:        
-	return leftVal.opSup (rightVal).isTrue(session);
+	return leftVal.opSup (rightVal).isTrue();
+      case Operator.INF_E:
+	return leftVal.opInf (rightVal).isTrue() || leftVal.val == rightVal.val;
+      case Operator.SUP_E:
+	return leftVal.opSup (rightVal).isTrue() || leftVal.val == rightVal.val;
       default:
 	return false;
       }
@@ -81,26 +89,42 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
     }
 
     Constante opSub (Constante other){      
-       assert (false,"Fatal Erreur Constance opSub, Operation Not Defined ");
+       assert (false,"Fatal Erreur " ~ getType() ~ " opSub, Operation Not Defined ");
     }
 
     Constante opMul (Constante other){      
-	assert (false,"Fatal Erreur Constance opMul, Operation Not Defined ");
+	assert (false,"Fatal Erreur " ~ getType() ~ " opMul, Operation Not Defined ");
     }
 
     Constante opDiv (Constante other){      
-	assert (false,"Fatal Erreur Constance opDiv, Operation Not Defined ");
+	assert (false,"Fatal Erreur " ~ getType() ~ " opDiv, Operation Not Defined ");
     }
 
     Constante opSup (Constante other){      
-	assert (false,"Fatal Erreur Constance opSup, Operation Not Defined ");
+	assert (false,"Fatal Erreur " ~ getType() ~ " opSup, Operation Not Defined ");
     }
 
     Constante opInf (Constante other){      
-	assert (false,"Fatal Erreur Constance opInf, Operation Not Defined ");
+	assert (false,"Fatal Erreur " ~ getType() ~ " opInf, Operation Not Defined ");
+    }
+
+    Constante opAnd (Constante other){      
+      assert (false,"Fatal Erreur " ~ getType() ~ " opAnd, Operation Not Defined ");
+    }
+
+    Constante opOr (Constante other){      
+      assert (false,"Fatal Erreur " ~ getType() ~ " opOr, Operation Not Defined ");
+    }
+
+    bool isTrue(){      
+      assert (false,getType() ~ " is not a Bool (isTrue called)");
+    }
+
+    string getType(){
+      return "Constante";
     }
     
-    override Constante getValue() {
+    override Constante getValue(Session session) {
       return this;
     }
   }
@@ -120,7 +144,7 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
       } else if (auto t = cast(Float) other) {	
 	return new Float (to!int (val) + to!float (t.val));
       }
-      return null;
+      assert (false,"Fatal Erreur " ~ getType() ~ " opPlus, NullValue or Type Not Supported ");
     }
 
     override Constante opSub (Constante other) {
@@ -129,7 +153,7 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
       }else if(auto t = cast(Float)other){	
 	return new Float (to!int (val) - to!float (t.val));
       }
-      return null;
+      assert (false,"Fatal Erreur " ~ getType() ~ " opPlus, NullValue or Type Not Supported ");
     }
 
     override Constante opMul (Constante other) {
@@ -138,7 +162,7 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
       } else if (auto t = cast(Float)other) {	
 	return new Float (to!int (val) * to!float (t.val));
       }
-      return null;
+      assert (false,"Fatal Erreur " ~ getType() ~ " opPlus, NullValue or Type Not Supported ");
     }
 
     override Constante opDiv (Constante other) {
@@ -147,7 +171,7 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
       } else if (auto t = cast(Float) other) {	
 	return new Float (to!int (val) / to!float (t.val));
       }
-      return null;
+      assert (false,"Fatal Erreur " ~ getType() ~ " opPlus, NullValue or Type Not Supported ");
     }
 
     override Constante opSup (Constante other) {
@@ -156,7 +180,7 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
       } else if (auto t = cast(Float) other) {	
 	return new Bool (to!int (val) > to!float (t.val));
       }
-      return null;
+      assert (false,"Fatal Erreur " ~ getType() ~ " opPlus, NullValue or Type Not Supported ");
     }
 
     override Constante opInf (Constante other) {
@@ -165,7 +189,11 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
       } else if (auto t = cast(Float) other) {	
 	return new Bool (to!int (val) < to!float (t.val));
       }
-      return null;
+      assert (false,"Fatal Erreur " ~ getType() ~ " opPlus, NullValue or Type Not Supported ");
+    }
+
+    override string getType(){
+      return "Int";
     }
     
   }
@@ -173,6 +201,14 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
   class Var : Constante {
     this (string val) {
       this.val = val;
+    }
+
+    override string getType(){
+      return "Var";
+    }
+
+    override Constante getValue(Session session) {     
+      assert (false,"TODO VAR");
     }
   }
 
@@ -185,31 +221,25 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
       this.val = to!string(val);
     }
 
-    override Constante opPlus (Constante other){
-       assert (false,"Fatal Erreur Bool opPlus, Operation Not Defined ");
+    override Constante opAnd (Constante other){
+      if (auto t = cast (Bool) other){
+	return new Bool(isTrue() && other.isTrue());
+      }
+      assert (false,"Fatal Erreur " ~ getType() ~ " opPlus, NullValue or Type Not Supported ");
     }
 
-    override Constante opSub (Constante other){      
-       assert (false,"Fatal Erreur Bool opSub, Operation Not Defined ");
+    override Constante opOr (Constante other){
+      if (auto t = cast (Bool) other){
+	return new Bool(to!bool(val) || to!bool(other.val));
+      }
+      assert (false,"Fatal Erreur " ~ getType() ~ " opPlus, NullValue or Type Not Supported ");
     }
 
-    override Constante opMul (Constante other){      
-	assert (false,"Fatal Erreur Bool opMul, Operation Not Defined ");
-    }
-
-    override Constante opDiv (Constante other){      
-	assert (false,"Fatal Erreur Bool opDiv, Operation Not Defined ");
-    }
-
-    override Constante opSup (Constante other){      
-	assert (false,"Fatal Erreur Bool opSup, Operation Not Defined ");
-    }
-
-    override Constante opInf (Constante other){      
-	assert (false,"Fatal Erreur Bool opInf, Operation Not Defined ");
+    override string getType(){
+      return "Bool";
     }
     
-    override bool isTrue (Session session) {
+    override bool isTrue () {
       return to!bool (val);
     }
   }
@@ -229,7 +259,7 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
       } else if (auto t = cast(Int) other) {	
 	return new Float (to!float (val) + to!int (t.val));
       }
-      assert (false,"Fatal Erreur Float opPlus, NullValue or Type Not Supported ");
+      assert (false,"Fatal Erreur " ~ getType() ~ " opPlus, NullValue or Type Not Supported ");
     }
 
     override Constante opSub (Constante other) {
@@ -238,7 +268,7 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
       } else if (auto t = cast(Int) other) {	
 	return new Float (to!float (val) - to!int (t.val));
       }
-      assert (false,"Fatal Erreur Float opSub, NullValue or Type Not Supported ");
+      assert (false,"Fatal Erreur " ~ getType() ~ " opSub, NullValue or Type Not Supported ");
     }
 
     override Constante opMul (Constante other) {
@@ -247,7 +277,7 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
       } else if (auto t = cast(Int) other) {	
 	return new Float (to!float (val) * to!int (t.val));
       }
-      assert (false,"Fatal Erreur Float opMul, NullValue or Type Not Supported ");
+      assert (false,"Fatal Erreur " ~ getType() ~ " opMul, NullValue or Type Not Supported ");
     }
 
     override Constante opDiv (Constante other) {
@@ -256,7 +286,7 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
       } else if (auto t = cast(Int) other) {	
 	return new Float (to!float (val) / to!int (t.val));
       }
-      assert (false,"Fatal Erreur Float opDiv, NullValue or Type Not Supported ");
+      assert (false,"Fatal Erreur " ~ getType() ~ " opDiv, NullValue or Type Not Supported ");
     }
 
         override Constante opSup (Constante other) {
@@ -265,7 +295,7 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
       } else if (auto t = cast(Int) other) {	
 	return new Bool (to!float (val) > to!int (t.val));
       }
-      assert (false,"Fatal Erreur Float opSup, NullValue or Type Not Supported ");
+      assert (false,"Fatal Erreur " ~ getType() ~ " opSup, NullValue or Type Not Supported ");
     }
 
     override Constante opInf (Constante other) {
@@ -274,7 +304,11 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
       } else if (auto t = cast(Int) other) {	
 	return new Bool (to!float (val) < to!int (t.val));
       }
-      assert (false,"Fatal Erreur Float opInf, NullValue or Type Not Supported ");
+      assert (false,"Fatal Erreur " ~ getType() ~ " opInf, NullValue or Type Not Supported ");
+    }
+
+    override string getType(){
+      return "Float";
     }
   }
 
