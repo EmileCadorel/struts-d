@@ -9,15 +9,19 @@ import servlib.utils.Log;
 import std.container, std.algorithm;
 
 import std.conv, std.stdio;
-import std.container, std.traits;
+import std.container, std.traits, std.array;
 
 class HtmlIncludeParser : HtmlInHerit ! ("dsp:include", HtmlIncludeParser) {
   
     override Balise[] execute (Balise element, Balise[] delegate (Balise, string, Session) callBack, string app, Session session) {
 	Log.instance.addInfo("HtmlInclude execute");
 	try{
-	    auto it = element["link"];
-	    return [HTMLoader.instance.load(it, app, session)];
+	    string link = element["link"];
+	    Balise root = HTMLoader.instance.load(link, app, session);
+	    if(root.name == Identifiant.eof){
+	        return root.childs.array();
+	    }else
+		return [root];
 	}catch(Exception e){
 	    writeln(e);
 	    return [];
