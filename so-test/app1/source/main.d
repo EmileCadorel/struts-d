@@ -10,8 +10,7 @@ class Home : Controller!Home {
     int test2;
 
     override string execute() {
-	string a = null;
-	return to!string(a[0]);
+	return "SUCCESS";
     }
 }
 

@@ -8,6 +8,7 @@ import servlib.utils.exception;
 import servlib.control.Session;
 import std.stdio;
 import servlib.utils.Singleton;
+import servlib.control.Controller;
 
 class HTMLoader {
 
@@ -19,7 +20,7 @@ class HTMLoader {
      Return:
      L'element root du nouveau fichier html transforme
     */
-    Balise load (string filename, string app, Session session) {
+    Balise load (string filename, string app, ControlVars session) {
 	try {
 	    Balise root = XMLoader.root (buildPath(app,ROOTDIR,filename));
 	    Balise[] dom = executeParser(root, app, session);
@@ -34,7 +35,7 @@ class HTMLoader {
 	return null;
     }
 
-    Balise[] executeParser (Balise balise, string app, Session session) {
+    Balise[] executeParser (Balise balise, string app, ControlVars session) {
 	auto it = (balise.name.toXml in _tagParser);
 	if (it !is null) {
 	    return it.execute (balise, &executeParser, app, session);	

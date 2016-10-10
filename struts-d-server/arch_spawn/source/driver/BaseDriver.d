@@ -185,7 +185,7 @@ class BaseDriver : HttpSession {
 		dsp_file = *it;
 	    }
 
-	    Balise html = HTMLoader.instance.load (dsp_file, app, null);
+	    Balise html = HTMLoader.instance.load (dsp_file, app, controller.attrInfos);
 	    OutBuffer buf;
 	    html.toXml (buf);
 	    return buf.toString;

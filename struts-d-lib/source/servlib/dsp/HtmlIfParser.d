@@ -4,6 +4,7 @@ import servlib.dsp.HtmlTagParser;
 import servlib.utils.xml;
 import servlib.utils.lexer;
 import servlib.control.Session;
+import servlib.control.Controller;
 import servlib.utils.Log;
 import std.container, std.algorithm;
 
@@ -24,12 +25,12 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
 	    this.right = right;
 	}
 
-	Constante getValue (Session session){
+	Constante getValue (ControlVars session){
 	    writeln("getValue");
 	    return left.opTest(op,right,session);
 	}
 
-	Constante opTest (Operator op, Expression right, Session session) {
+	Constante opTest (Operator op, Expression right, ControlVars session) {
 	    writeln(cast(string)op);
 	    switch (op) {
 	    case Operator.PLUS:
@@ -61,7 +62,7 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
 	    }
 	}    
     
-	bool isTrue (Session session) {
+	bool isTrue (ControlVars session) {
 	    try{		
 		Constante leftVal = left.getValue(session);
 		Constante rightVal = right.getValue(session);		
@@ -148,7 +149,7 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
 	    return "Constante";
 	}
     
-	override Constante getValue(Session session) {
+	override Constante getValue(ControlVars session) {
 	    return this;
 	}
     }
@@ -231,7 +232,7 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
 	    return "Var";
 	}
 
-	override Constante getValue(Session session) {     
+	override Constante getValue(ControlVars session) {     
 	    throw new Exception ("TODO VAR");
 	}
     }
@@ -356,7 +357,7 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
 	    PARC = ")"      
 	    }
   
-    override Balise[] execute (Balise element, Balise[] delegate (Balise, string, Session) callBack, string app, Session session) {
+    override Balise[] execute (Balise element, Balise[] delegate (Balise, string, ControlVars) callBack, string app, ControlVars session) {
 	Log.instance.addInfo("HtmlIf execute");
 	auto it = element["test"];
 	if (it !is null){

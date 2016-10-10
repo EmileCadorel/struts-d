@@ -77,11 +77,13 @@ template ControlInsert (T : ControllerAncestor) {
     
 }
 
+alias ControllerAncestor.attributeInfo [] ControlVars; 
 /**
  L'ancetre de tout les controller
  */
 abstract class ControllerAncestor {
 
+    
     struct attributeInfo {
 	string name;
 	void* data;

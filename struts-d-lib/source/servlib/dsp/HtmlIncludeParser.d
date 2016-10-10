@@ -4,7 +4,7 @@ import servlib.dsp.HtmlTagParser;
 import servlib.dsp.HTMLoader;
 import servlib.utils.xml;
 import servlib.utils.lexer;
-import servlib.control.Session;
+import servlib.control.Controller;
 import servlib.utils.Log;
 import std.container, std.algorithm;
 
@@ -13,7 +13,7 @@ import std.container, std.traits, std.array;
 
 class HtmlIncludeParser : HtmlInHerit ! ("dsp:include", HtmlIncludeParser) {
   
-    override Balise[] execute (Balise element, Balise[] delegate (Balise, string, Session) callBack, string app, Session session) {
+    override Balise[] execute (Balise element, Balise[] delegate (Balise, string, ControlVars) callBack, string app, ControlVars session) {
 	Log.instance.addInfo("HtmlInclude execute");
 	try{
 	    string link = element["link"];

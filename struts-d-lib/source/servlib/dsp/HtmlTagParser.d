@@ -4,10 +4,11 @@ import servlib.utils.xml;
 import servlib.utils.Log;
 import servlib.dsp.HTMLoader;
 import servlib.control.Session;
+import servlib.control.Controller;
 import std.stdio;
 
 class HtmlTagParser {
-    abstract Balise[] execute (Balise, Balise[] delegate (Balise, string, Session), string, Session);
+    abstract Balise[] execute (Balise, Balise[] delegate (Balise, string, ControlVars), string, ControlVars);
 }
 
 template HtmlTPInsert (string id, T : HtmlTagParser) {
