@@ -110,36 +110,16 @@ class BaseDriver : HttpSession {
     /**
        Renvoie une reponse (HttpResponse) en fonction de la requete et du controlleur
     */
-    HttpResponse build_response (HttpRequest request, ControllerAncestor controller, ControllerInfos controller_info, string app, HttpResponseCode code_reponse) {
+    HttpResponse build_response (HttpRequest request, ControllerAncestor controller, ControllerInfos controller_info, string app, HttpResponseCode response_code) {
 	HttpResponse response = new HttpResponse;
 	controller.unpackRequest (request);
 
 	this.handleSessid (request, response);
 
-	string result;
-	if (code_reponse == HttpResponseCode.OK) {
-	    string res = controller.execute();
-	    string dsp_file;
-	    auto it = (res in controller_info.results);
-	    if (result is null) {
-		if (controller_info.def is null || strip(controller_info.def) == "") {
-		    //TODO throw
-		}
-		dsp_file = controller_info.def;
-	    } else {
-		dsp_file = *it;
-	    }
+	string content = this.getContent (controller, controller_info, app, response_code);
 
-	    Balise html = HTMLoader.instance.load (dsp_file, app, null);
-	    OutBuffer buf;
-	    html.toXml (buf);
-	    result = buf.toString;
-	} else {
-	    result = controller.execute ();
-	}
-
-	response.addContent (result);
-	response.code = code_reponse;
+	response.addContent (content);
+	response.code = response_code;
 	response.proto = "HTTP/1.1";
 	response.type = "text/html";
 
@@ -159,6 +139,7 @@ class BaseDriver : HttpSession {
 	    }
 	    response.cookies["SESSID"] = this.sessid;
 	} else if (this.config.use_sessid == SessIdState.URL) {
+	    /// TODO: quand le client veut que le sessid soit dans l'url, le système de génération d'url devra y avoit accès pour ajouter le sessid dans chaque url générée
 	    if (this.sessid.length == 0) {
 		HttpUrl url = request.url;
 		HttpParameter sessid = url.param("SESSID");
@@ -168,6 +149,33 @@ class BaseDriver : HttpSession {
 		    this.sessid = this.create_sessid ();
 		}
 	    }
+	}
+    }
+
+    /**
+       Va chercher le contenu à renvoyer au client en fonction du code de réponse et du controlleur
+       Si le code de réponse est OK on va chercher la page dsp indiquée dans le controller_info
+     */
+    string getContent (ControllerAncestor controller, ControllerInfos controller_info, string app, HttpResponseCode response_code) {
+	if (response_code == HttpResponseCode.OK) {
+	    string res = controller.execute();
+	    string dsp_file;
+	    auto it = (res in controller_info.results);
+	    if (it is null) {
+		if (controller_info.def is null || strip(controller_info.def) == "") {
+		    //TODO throw
+		}
+		dsp_file = controller_info.def;
+	    } else {
+		dsp_file = *it;
+	    }
+
+	    Balise html = HTMLoader.instance.load (dsp_file, app, null);
+	    OutBuffer buf;
+	    html.toXml (buf);
+	    return buf.toString;
+	} else {
+	    return controller.execute ();
 	}
     }
 
