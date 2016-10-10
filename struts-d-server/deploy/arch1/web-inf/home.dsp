@@ -8,6 +8,11 @@
     <dsp:if test="(((10 + 10) * 2) / 10 >= 4) && (2 == 2)">
       Ici
     </dsp:if>
-    <dsp:include link="header.dsp"/>
+	<dsp:include link="header.dsp"/>
+
+<dsp:for count="10">
+<p>counter</p>
+</dsp:for>
+
   </body>
 </html>

@@ -109,19 +109,27 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
 	}
 
 	Bool opSupEq (Constante other){
-	    Bool sup = opSup(other);
-	    if(sup.isTrue())
-		return sup;
-	    else
-		return opEqual(other);
+	    if(getType() != "Constante"){
+		Bool sup = opSup(other);
+		if(sup.isTrue())
+		    return sup;
+		else
+		    return opEqual(other);
+	    }else{		
+		throw new Exception ("Fatal Erreur " ~ getType() ~ " opInfEq, Operation Not Defined ");
+	    }
 	}
 
-	Bool opInfEq (Constante other){      
-	    Bool inf = opInf(other);
-	    if(inf.isTrue())
-		return inf;
-	    else
-		return opEqual(other);
+	Bool opInfEq (Constante other){
+	    if(getType() != "Constante"){
+		Bool inf = opInf(other);
+		if(inf.isTrue())
+		    return inf;
+		else
+		    return opEqual(other);
+	    }else{		
+		throw new Exception ("Fatal Erreur " ~ getType() ~ " opSupEq, Operation Not Defined ");
+	    }
 	}
 
 	Bool opAnd (Constante other){      
@@ -233,7 +241,24 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
 	}
 
 	override Constante getValue(ControlVars session) {     
-	    throw new Exception ("TODO VAR");
+	    auto var = val in session;
+	    if(var !is null){
+		switch(var.typename){
+		case "int":
+		    return new Int(*cast(int*)var.data);
+		case "bool":
+		    return new Bool(*cast(bool*)var.data);
+		case "float":
+		    return new Float(*cast(float*)var.data);
+		case "immutable(char)[]":
+		    return new Constante(*cast(string*)var.data);
+		default:
+		    throw new Exception("Var Type not supported");
+		}
+	    }else{		
+		throw new Exception("Var not found");
+	    }
+	    
 	}
     }
 
