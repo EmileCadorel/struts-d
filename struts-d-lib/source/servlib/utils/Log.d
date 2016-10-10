@@ -13,8 +13,13 @@ import std.outbuffer;
 class Log {
 
     this () {
-	this.file = File(Option.instance.log_file_path, "a");
-	this._file_path = Option.instance.log_file_path;
+	this._file_path = this._default_file_path;
+	this._open_file ();
+    }
+
+    this (string file_path) {
+	this._file_path = file_path;
+	this._open_file ();
     }
 
     ~this () {
@@ -96,11 +101,17 @@ class Log {
     mixin Singleton!Log;
 
     private {
+	void _open_file () {
+	    this.file = File(this._file_path, "a");
+	}
+
 	File file;
 	string _file_path;
 	string RESET = "\u001B[0m";
 	string PURPLE = "\u001B[46m";
 	string RED = "\u001B[41m";
 	string GREEN = "\u001B[42m";
+
+	immutable string _default_file_path = "logs.txt";
     }
 }
