@@ -17,7 +17,7 @@ class ApplicationContainer {
 	return this._controllers;
     }
 
-    /**     
+    /**
      Params:
      le nom de l'application
      Return:
@@ -34,10 +34,10 @@ class ApplicationContainer {
      */
     void addApp(string value) {
 	this._controllers[value] = new ControllerContainer;
-    }    
-    
-    private ControllerContainer [string] _controllers;    
-    mixin Singleton!ApplicationContainer;    
+    }
+
+    private ControllerContainer [string] _controllers;
+    mixin Singleton!ApplicationContainer;
 }
 
 
@@ -59,7 +59,7 @@ class ControllerContainer {
     /**
      Definis un controller pour un chemin d'acces
      Params:
-     value, le controller 
+     value, le controller
      name, le chemin d'acces du controller
      */
     void opIndexAssign (ControllerInfos value, string name) {
@@ -70,11 +70,11 @@ class ControllerContainer {
      Retourne le tableau associatif des controller [chemin d'acces]
      */
     ref ControllerInfos [string] controllers () { return this._controllers; }
-    
+
     private  {
 	ControllerInfos [string] _controllers;
     }
-    
+
 }
 
 /**
@@ -84,7 +84,7 @@ struct ControllerInfos {
     /// le chemin d'acces du controller
     string name;
 
-    /// le nom du controller pour pouvoir le retrouver dans la tables 
+    /// le nom du controller pour pouvoir le retrouver dans la tables
     string control;
 
     /// Les informations sur le traitement a effectuer apres execution du controller
@@ -108,5 +108,5 @@ struct ControllerInfos {
     bool isNull () {
 	return this.name == null;
     }
-    
+
 }

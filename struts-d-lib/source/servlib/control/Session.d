@@ -6,14 +6,14 @@ module servlib.control.Session;
 */
 class Session {
 
-    void opIndexAssign (T : Object) (T elem, string name) {
-	datas[name] = cast(void*)elem;
-    }
+    // void opIndexAssign (T : Object) (T elem, string name) {
+    // 	datas[name] = cast(void*)elem;
+    // }
 
     void opIndexAssign (T) (T * elem, string name) {
-	datas[name] = elem;
+    	datas[name] = elem;
     }
-    
+
     T get (T : Object) (string name) {
 	auto elem = (name in datas);
 	if (elem is null) return null;

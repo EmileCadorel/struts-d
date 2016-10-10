@@ -24,13 +24,21 @@ class HttpUrl {
     }
 
     /**
-     Les parametre de la requete
+     Le parametre de la requete
      */
     ref HttpParameter param (string name) {
 	auto it = (name in _params);
 	if (it !is null) return *it;
 	else return HttpParameter.empty;
     }
+
+
+  /**
+     Les paramètres de la requete
+   */
+  ref HttpParameter [string] params () {
+    return  this._params;
+  }
 
     override string toString () {
 	OutBuffer buf = new OutBuffer;

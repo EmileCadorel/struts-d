@@ -1,11 +1,9 @@
 <struts>
   <action name="home" class="main.Home">
-    <result>Success </result>
+    <result name="SUCCESS">home.dsp</result>
   </action>
 
   <action name="search" class="main.Search">
-    <result name="sucess">machin.dsp</result>
+    <result name="SUCCESS">search.dsp</result>
   </action>
 </struts>
-
-
