@@ -2,8 +2,8 @@
   <body>
     <H1> Home </H1>
     <p> Bienvenue </p>
-    <dsp:if test="1 == 2">
-      Ici
-    </dsp:if>
+    <form action="toto">
+      <input type="submit" value="Toto"/>
+    </form>
   </body>
 </html>

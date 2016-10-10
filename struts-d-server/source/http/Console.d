@@ -6,11 +6,12 @@ import servlib.utils.Log;
 import servlib.utils.lexer;
 import std.container, std.outbuffer;
 import utils.Process;
+import std.stdio, std.array;
 
 class Console : Thread {
 
     this () {
-	super (&startRoutine);
+	super (&run);
 	commands = ["not_found" : &notFoundCom,
 		    "kill" : &killCom,
 		    "deploy" : &deployCom,
@@ -18,20 +19,18 @@ class Console : Thread {
     }
     
     void onBegin () {
-	Log.instance.addInfo ("Console start");
-	this.startRoutine ();
+	writeln ("Console start");
+	while (!this.end) 
+	    routine ();
     }
 
-    void startRoutine () {
-	string line;
-	while (!this.end) {
-	    write ("> ");
-	    line = readln ();
-	    string [] s = split (line, [" ", "\n"]);
-	    auto it = (s[0] in commands);
-	    if (it !is null) (*it)(s);
-	    else commands["not_found"](s);
-	}
+    void routine () {
+	write ("> ");
+	string line = readln ();
+	string [] s = split (line, [" ", "\n"]);
+	auto it = (s[0] in commands);
+	if (it !is null) (*it)(s);
+	else commands["not_found"](s);    
     }
 
     void kill () {
@@ -93,6 +92,6 @@ class Console : Thread {
     }
     
     private void delegate(string[]) [string] commands;
-    private bool end = false;
+    bool end = false;
 }
 

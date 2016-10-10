@@ -1,7 +1,7 @@
 <html>
   <body>
     <H1> Home </H1>
-    <form>
+    <form action="/test">
       <input type="text" name="test"/>
       <input type="submit"/>
     </form>

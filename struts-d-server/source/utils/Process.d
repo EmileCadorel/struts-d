@@ -3,6 +3,7 @@ import servlib.utils.Singleton;
 import std.process;
 import std.conv, std.stdio;
 import servlib.utils.Log;
+import utils.ProcessWaiter;
 
 class ProcessLauncher {
 
@@ -18,6 +19,8 @@ class ProcessLauncher {
 	lastPort ++;
 	lastPort %= ports.length;
 	this.process [arch] = pid;
+	ProcessWaiter proc = new ProcessWaiter (arch, pid);
+	proc.start ();
     }        
         
     void kill (string arch) {
@@ -26,15 +29,22 @@ class ProcessLauncher {
 	    std.process.kill (*it);
 	    wait (*it);
 	    writefln("Kill arch:%s", arch);
-	}
+	    process.remove (arch);
+	}	
     }
 
     void killAll () {
 	foreach (key, value ; process) {
-	    std.process.kill (value);
-	    wait (value);
-	    writefln("Kill arch:%s", key);
-	}
+	    try {
+		std.process.kill (value);		
+		wait (value);
+		writefln("Kill arch:%s", key);
+		process.remove (key);
+	    } catch (Exception e) {
+		writefln("Kill arch:%s", key);
+		process.remove (key);
+	    }		
+	}	
     }
     
     mixin Singleton!ProcessLauncher;

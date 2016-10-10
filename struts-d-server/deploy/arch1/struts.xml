@@ -1,9 +1,17 @@
 <struts>
   <action name="home" class="main.Home">
-    <result value="INPUT">login.dsp</result>
+    <result>login.dsp</result>
     <result value="SUCCESS">home.dsp</result>
   </action>
 
+  <action name="test" class="main.Home">
+    <result>home.dsp</result>
+  </action>
+
+  <action name="toto" class="main.Page">
+    <result>page.dsp</result>
+  </action>
+  
   <action name="search" class="main.Search">
     <result value="SUCCESS">search.dsp</result>
   </action>
