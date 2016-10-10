@@ -356,7 +356,7 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
 	    PARC = ")"      
 	    }
   
-    override Balise[] execute (Balise element, Balise[] delegate (Balise, Session) callBack, Session session) {
+    override Balise[] execute (Balise element, Balise[] delegate (Balise, string, Session) callBack, string app, Session session) {
 	Log.instance.addInfo("HtmlIf execute");
 	auto it = element["test"];
 	if (it !is null){
@@ -367,7 +367,7 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
 	    if (exp.isTrue (session)) {
 		Balise [] total ;
 		foreach (itch ; element.childs) {
-		    auto ret = callBack (itch, session);
+		    auto ret = callBack (itch, app, session);
 		    total ~= ret;
 		}
 		return total;

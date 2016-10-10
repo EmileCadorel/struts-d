@@ -22,7 +22,7 @@ class HTMLoader {
     Balise load (string filename, string app, Session session) {
 	try {
 	    Balise root = XMLoader.root (buildPath(app,ROOTDIR,filename));
-	    Balise[] dom = executeParser(root, session);
+	    Balise[] dom = executeParser(root, app, session);
 	    if (dom.length == 1){
 		return dom [0];
 	    }else{
@@ -34,14 +34,14 @@ class HTMLoader {
 	return null;
     }
 
-    Balise[] executeParser (Balise balise, Session session) {
+    Balise[] executeParser (Balise balise, string app, Session session) {
 	auto it = (balise.name.toXml in _tagParser);
 	if (it !is null) {
-	    return it.execute (balise, &executeParser, session);	
+	    return it.execute (balise, &executeParser, app, session);	
 	} else {
 	    Array!Balise final_childs;
 	    foreach (child ; balise.childs) {
-		auto childs = executeParser (child, session);
+		auto childs = executeParser (child, app, session);
 		foreach (itch ; childs)
 		    final_childs.insertBack (itch);
 	    }
