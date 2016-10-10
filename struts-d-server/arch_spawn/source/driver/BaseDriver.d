@@ -124,29 +124,16 @@ class BaseDriver : HttpSession {
       string res = controller.execute();
       string dsp_file;
       auto it = (res in controller_info.results);
-      if (result is null) {
+      if (it is null) {
 	if (controller_info.def is null || strip(controller_info.def) == "") {
 	  //TODO throw
 	}
 	dsp_file = controller_info.def;
       } else {
-	dsp_file = result;
+	dsp_file = *it;
       }
-
-      /* Récupération des variables GET et POST pour les mettres dans une sesion */
-      Session session = new Session;
-      HttpUrl url = request.url;
-      foreach (key, value ; url.params) {
-	session[key] = &value;
-      }
-      HttpPost post_values = request.post_value;
-      if (post_values !is null) {
-	foreach (key, value ; post_values.params) {
-	  session[key] = &value;
-	}
-      }
-
-      Balise html = HTMLoader.instance.load (dsp_file, app, session);
+      
+      Balise html = HTMLoader.instance.load (dsp_file, app, null);
       OutBuffer buf;
       html.toXml (buf);
       result = buf.toString;

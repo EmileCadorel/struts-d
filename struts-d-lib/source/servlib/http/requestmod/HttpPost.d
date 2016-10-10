@@ -15,6 +15,12 @@ class HttpPost {
 	return this._params;
     }
 
+    HttpParameter param (string name) {
+	auto it = (name in _params);
+	if (it !is null) return *it;
+	return HttpParameter.empty;
+    }
+    
     /**
      Retourne l'ensemble des fichiers des la requete
      */

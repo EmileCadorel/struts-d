@@ -1,9 +1,10 @@
 <struts>
   <action name="home" class="main.Home">
-    <result name="SUCCESS">home.dsp</result>
+    <result value="INPUT">login.dsp</result>
+    <result value="SUCCESS">home.dsp</result>
   </action>
 
   <action name="search" class="main.Search">
-    <result name="SUCCESS">search.dsp</result>
+    <result value="SUCCESS">search.dsp</result>
   </action>
 </struts>

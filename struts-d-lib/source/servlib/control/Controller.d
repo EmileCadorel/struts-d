@@ -96,25 +96,37 @@ abstract class ControllerAncestor {
     void unpackRequest (HttpRequest request) {
 	this._request = request;
 	auto url = request.url;
+	auto post =  request.post_value;
 	foreach (it ; this.attrInfos) {
 	    auto param = url.param (it.name[1 .. it.name.length]);
+	    HttpParameter param_post;
+	    if (post !is null) {
+		param_post = post.param(it.name[1 .. it.name.length]);
+	    } else param_post = HttpParameter.empty;
 	    if (!param.isVoid) {
-		if (param.Is(HttpParamEnum.STRING) &&
-		    it.typename == "immutable(char)[]") {
-		    *(cast(string*)it.data) = param.to!string;
-		} else if (param.Is(HttpParamEnum.INT) &&
-			   it.typename == "int") {
-		    *(cast(int*)it.data) = param.to!int;
-		} else if (param.Is(HttpParamEnum.FLOAT) &&
-			   it.typename == "float") {
-		    *(cast(float*)it.data) = param.to!float;
-		} else if (it.typename == "immutable(char)[]") {
-		    *(cast(string*)it.data) = null;
-		}
+		setParam (param, it);
+	    } else if (!param_post.isVoid) {
+		setParam (param_post, it);
 	    } else if (it.typename == "immutable(char)[]") {
 		*(cast(string*)it.data) = null;
 	    }
 	}
+    }
+
+    void setParam (HttpParameter param, ref attributeInfo it) {
+	if (param.Is(HttpParamEnum.STRING) &&
+	    it.typename == "immutable(char)[]") {
+	    *(cast(string*)it.data) = param.to!string;
+	} else if (param.Is(HttpParamEnum.INT) &&
+		   it.typename == "int") {
+	    *(cast(int*)it.data) = param.to!int;
+	} else if (param.Is(HttpParamEnum.FLOAT) &&
+		   it.typename == "float") {
+	    *(cast(float*)it.data) = param.to!float;
+	} else if (it.typename == "immutable(char)[]") {
+	    *(cast(string*)it.data) = null;
+	}
+
     }
 
     abstract string execute ();

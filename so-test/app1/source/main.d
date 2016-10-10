@@ -9,7 +9,11 @@ class Home : Controller!Home {
     int test2;
 
     override string execute() {
-      return "SUCCESS";
+	if (test !is null) {
+	    return "SUCCESS";
+	} else {
+	    return "INPUT";
+	}
     }
 
     // override string execute () {
