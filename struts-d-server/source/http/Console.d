@@ -25,7 +25,7 @@ class Console : Thread {
     void startRoutine () {
 	string line;
 	while (!this.end) {
-	    writeln (">");
+	    write ("> ");
 	    line = readln ();
 	    string [] s = split (line, [" ", "\n"]);
 	    auto it = (s[0] in commands);
@@ -43,6 +43,7 @@ class Console : Thread {
 	    Log.instance.addInfo ("kill [-s] [-a name] : this will kill the server or an application (based on its name)");
 	} else {
 	    this.end = true;
+	    ProcessLauncher.instance.killAll ();
 	}
     }
 
