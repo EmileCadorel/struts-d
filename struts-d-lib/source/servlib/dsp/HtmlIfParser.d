@@ -26,12 +26,10 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
 	}
 
 	Constante getValue (ControlVars session){
-	    writeln("getValue");
 	    return left.opTest(op,right,session);
 	}
 
 	Constante opTest (Operator op, Expression right, ControlVars session) {
-	    writeln(cast(string)op);
 	    switch (op) {
 	    case Operator.PLUS:
 		return getValue(session).opPlus (right.getValue(session));
@@ -65,8 +63,7 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
 	bool isTrue (ControlVars session) {
 	    try{		
 		Constante leftVal = left.getValue(session);
-		Constante rightVal = right.getValue(session);		
-		writeln("result: " ~ leftVal.val ~ " " ~ cast(string) op ~ " " ~ rightVal.val);
+		Constante rightVal = right.getValue(session);	        
 		return leftVal.opTest(op,rightVal,session).isTrue();
 	    }catch(Exception e){
 		writeln(e);
@@ -141,7 +138,6 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
 	}
 
 	Bool opEqual (Constante other){
-	    writeln(val ~ ", " ~ other.val);
 	    return new Bool(val == other.val);
 	}
 
@@ -240,25 +236,24 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
 	    return "Var";
 	}
 
-	override Constante getValue(ControlVars session) {     
-	    auto var = val in session;
-	    if(var !is null){
-		switch(var.typename){
-		case "int":
-		    return new Int(*cast(int*)var.data);
-		case "bool":
-		    return new Bool(*cast(bool*)var.data);
-		case "float":
-		    return new Float(*cast(float*)var.data);
-		case "immutable(char)[]":
-		    return new Constante(*cast(string*)var.data);
-		default:
-		    throw new Exception("Var Type not supported");
+	override Constante getValue(ControlVars session) {
+	    foreach (elem ; session) {		    
+		if (elem.name == '.' ~ val) {
+		    switch (elem.typename) {
+		    case "int":
+			return new Int (*cast(int*) elem.data);
+		    case "bool":
+			return new Bool (*cast(bool*) elem.data);
+		    case "float":
+			return new Float (*cast(float*) elem.data);
+		    case "immutable(char)[]":
+			return new Constante (*cast(string*) elem.data);
+		    default:
+			throw new Exception ("Var Type not supported");
+		    }
 		}
-	    }else{		
-		throw new Exception("Var not found");
 	    }
-	    
+	    throw new Exception ("Var not found '" ~ val ~ "'");
 	}
     }
 

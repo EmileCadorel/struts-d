@@ -77,7 +77,7 @@ template ControlInsert (T : ControllerAncestor) {
     
 }
 
-alias ControllerAncestor.attributeInfo [string] ControlVars; 
+alias ControllerAncestor.attributeInfo [] ControlVars; 
 /**
  L'ancetre de tout les controller
  */
@@ -90,7 +90,7 @@ abstract class ControllerAncestor {
 	string typename;
     }
 
-    attributeInfo [string] attrInfos;
+    attributeInfo [] attrInfos;
     
     /**
      Unpack la request et rempli les attributs du controller en consequence

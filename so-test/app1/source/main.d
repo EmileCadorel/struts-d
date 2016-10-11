@@ -7,7 +7,7 @@ class Home : Controller!Home {
 
     string test;
 
-    int test2;
+    int test2 = 8;
 
     override string execute() {
 	return "SUCCESS";

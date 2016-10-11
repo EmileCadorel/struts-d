@@ -9,10 +9,8 @@
       Ici
     </dsp:if>
 	<dsp:include link="header.dsp"/>
-
-<dsp:for count="10">
-<p>counter</p>
-</dsp:for>
-
+<dsp:if test="test2 == 9">
+<p>test ok</p>
+</dsp:if>
   </body>
 </html>

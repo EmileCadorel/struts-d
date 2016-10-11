@@ -14,7 +14,7 @@ import std.container, std.traits, std.array;
 class HtmlForEachParser : HtmlInHerit ! ("dsp:forEach", HtmlForEachParser) {
   
     override Balise[] execute (Balise element, Balise[] delegate (Balise, string, ControlVars) callBack, string app, ControlVars session) {
-	Log.instance.addInfo("HtmlFor execute");
+	Log.instance.addInfo("HtmlForEach execute");
 	try{
 	    int nb = to!int(element["count"]);
 	    Balise [] array;
@@ -26,6 +26,5 @@ class HtmlForEachParser : HtmlInHerit ! ("dsp:forEach", HtmlForEachParser) {
 	    writeln(e);
 	    return [];
 	}
-    }
-	
+    }	
 }
