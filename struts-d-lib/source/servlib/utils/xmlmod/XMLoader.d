@@ -1,6 +1,6 @@
 module servlib.utils.xmlmod.XMLoader;
 import servlib.utils.lexer;
-import std.outbuffer, std.traits;
+import std.outbuffer, std.traits, std.string;
 import std.conv : to;
 import std.container, std.string, std.stdio;
 import servlib.utils.exception;
@@ -21,6 +21,7 @@ enum XMLTokens : string {
 	EQUAL = "=",
 	QUOT = "\""
 }
+
 
 class XMLoader {
 
@@ -205,10 +206,11 @@ class XMLoader {
 	    while (true) {
 		auto end = file.getNext (word);
 		if (!end) throw new XMLSyntaxError (file, word);
-		if (find ([EnumMembers!XMLTokens], word.str) != []) {
+		if (find ([EnumMembers!XMLTokens], word.str) != []
+		    && find ([XMLTokens.SEMI_COLON, XMLTokens.EQUAL, XMLTokens.QUOT], word.str) == []) {
 		    file.rewind ();
 		    file.setSkip (make!(Array!string)(" ", "\n", "\r"));
-		    return new Text (total);
+		    return new Text (strip (total));
 		} else {
 		    if (word.str == "\n" || word.str == "\r") total ~= " ";
 		    else total ~= word.str;
