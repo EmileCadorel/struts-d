@@ -4,6 +4,7 @@
   <body>
     <H1> Home </H1>
     Bienvenue:
-    <dsp:value value="test"/>
+    <dsp:value value="test"/> <br/>
+    Foo.name : <dsp:value value="foo.name"/>
   </body>
 </html>
