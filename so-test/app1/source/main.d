@@ -9,13 +9,22 @@ class Home : Controller!Home {
 
     int test2 = 8;
 
+    this () {
+	super (this);
+    }
+
     override string execute() {
-	return "SUCCESS";
+	if (test is null) return "INPUT";
+	else return "SUCCESS";
     }
 }
 
 class Page : Controller!Page {
 
+    this () {
+	super (this);
+    }
+    
     override string execute () {
 	return "";
     }
@@ -23,6 +32,11 @@ class Page : Controller!Page {
 
 
 class Search : Controller!Search {
+
+    this () {
+	super (this);
+    }
+    
     override string execute () {
 	return "SUCCESS";
     }

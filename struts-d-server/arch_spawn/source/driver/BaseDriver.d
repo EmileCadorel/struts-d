@@ -54,7 +54,6 @@ class BaseDriver : HttpSession {
 	} else {
 	    HttpRequest request = this.toRequest (data);
 	    Log.instance.addInfo (this.client_addr, " : ", to!string(request.http_method), " ", request.url.toString());
-
 	    this.handleRequest (request);
 	}
     }
@@ -82,7 +81,9 @@ class BaseDriver : HttpSession {
 	this.getController (controller_name, controller, controller_info, app);
 
 	if (controller is null) {
-	    controller = ControllerTable.instance[this.controllers["NotFound"].control];
+	    auto controllerInfo = ControllerTable.instance[this.controllers["NotFound"].control];
+	    writeln (controllerInfo.name);
+	    controller = cast(ControllerAncestor) (Object.factory (controllerInfo.name));
 	    controller_info = this.controllers["NotFound"];
 	    code_reponse = HttpResponseCode.NOT_FOUND;
 	}
@@ -99,7 +100,8 @@ class BaseDriver : HttpSession {
 	foreach (key, value; ApplicationContainer.instance.all ()) {
 	    auto control = value[controller_name];
 	    if (!control.isNull) {
-		controller = ControllerTable.instance [control.control];
+		auto typeinfo = ControllerTable.instance [control.control];
+		controller = cast(ControllerAncestor) (Object.factory (typeinfo.name));
 		controller_info = control;
 		app = key;
 		break;
@@ -185,7 +187,7 @@ class BaseDriver : HttpSession {
 		dsp_file = *it;
 	    }
 
-	    Balise html = HTMLoader.instance.load (dsp_file, app, controller.attrInfos);
+	    Balise html = HTMLoader.instance.load (dsp_file, app, controller);
 	    OutBuffer buf;
 	    html.toXml (buf);
 	    return buf.toString;

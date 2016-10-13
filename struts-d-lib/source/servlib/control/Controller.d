@@ -2,7 +2,11 @@ module servlib.control.Controller;
 import servlib.http.request;
 import servlib.utils.Singleton;
 import std.stdio, std.path;
-import std.outbuffer, std.conv;
+import std.outbuffer, std.conv, std.typecons;
+import std.container;
+import servlib.control.Bindable;
+
+alias ControllerInfo = Tuple!(TypeInfo, "type", string, "name");
 
 /**
  Singleton stockant les instances de controller
@@ -15,7 +19,7 @@ class ControllerTable {
      name, le nom du controller
      control, le controller
      */
-    void insert (string name, ControllerAncestor control) {
+    void insert (string name, ControllerInfo control) {
 	_global [name] = control;
     }
 
@@ -25,17 +29,17 @@ class ControllerTable {
      Return:
      un controller en fonction de son nom
      */
-    ControllerAncestor opIndex (string name) {
+    ControllerInfo opIndex (string name) {
 	auto it = name in _global;
 	if (it !is null) return *it;
-	else return null;
+	else return ControllerInfo (null, "");
     }
 
     /**
      Return:
      tout les controller
      */
-    ref ControllerAncestor [string] getAll () {
+    ref ControllerInfo [string] getAll () {
 	return this._global;
     }
 
@@ -48,7 +52,7 @@ class ControllerTable {
     mixin Singleton!ControllerTable;
 
     private {
-	ControllerAncestor[string] _global;
+	ControllerInfo [string] _global;
     }
 }
 
@@ -56,79 +60,64 @@ class ControllerTable {
  Permet d'instancier les controller statiquement
  */
 template ControlInsert (T : ControllerAncestor) {
+
     static this () {
 	writeln ("insert : " ~ T.classinfo.name);
-	auto inst = new T;
-	pack ! (T, inst.tupleof.length) (inst);
-	writeln (inst.attrInfos);
-	ControllerTable.instance.insert (T.classinfo.name, inst);
-    }
-
-    private {
-	static void pack (T, int nb) (ref T a) {
-	    pack !(T, nb - 1) (a);
-	    a.attrInfos ~= [ControllerAncestor.attributeInfo (extension (a.tupleof[nb - 1].stringof),
-							      & (a.tupleof[nb - 1]),
-							      typeid(a.tupleof[nb - 1]).toString())];
-	}
-	
-	static void pack (T, int nb : 0) (ref T) {}
+	ControllerTable.instance.insert (T.classinfo.name, ControllerInfo (T.classinfo, T.classinfo.name));
     }
     
 }
 
-alias ControllerAncestor.attributeInfo [] ControlVars; 
 /**
  L'ancetre de tout les controller
  */
-abstract class ControllerAncestor {
+class ControllerAncestor {
 
-    
-    struct attributeInfo {
-	string name;
-	void* data;
-	string typename;
+    this (T) (T elem) {
+	init (elem);
     }
-
-    attributeInfo [] attrInfos;
     
     /**
      Unpack la request et rempli les attributs du controller en consequence
     */
     void unpackRequest (HttpRequest request) {
-	this._request = request;
-	auto url = request.url;
-	auto post =  request.post_value;
-	foreach (it ; this.attrInfos) {
-	    auto param = url.param (it.name[1 .. it.name.length]);
-	    HttpParameter param_post;
-	    if (post !is null) {
-		param_post = post.param(it.name[1 .. it.name.length]);
-	    } else param_post = HttpParameter.empty;
-	    if (!param.isVoid) {
-		setParam (param, it);
-	    } else if (!param_post.isVoid) {
-		setParam (param_post, it);
-	    } else if (it.typename == "immutable(char)[]") {
-		*(cast(string*)it.data) = null;
+	foreach (it ; this.all ()) {
+	    if (it.type == "string") {
+		*(cast(string*)it.value) = null;
+	    }	    
+	}
+	
+	foreach (key, value ; request.url.params) {
+	    auto it = this.getValue (key);
+	    if (it.name == key)
+		setValue (it, value);
+	}
+
+	if (request.post_value !is null) {
+	    foreach (key, value ; request.post_value.params) {
+		auto it = this.getValue (key);
+		if (it.name == key)
+		    setValue (it, value);
 	    }
 	}
     }
 
-    void setParam (HttpParameter param, ref attributeInfo it) {
-	if (param.Is(HttpParamEnum.STRING) &&
-	    it.typename == "immutable(char)[]") {
-	    *(cast(string*)it.data) = param.to!string;
-	} else if (param.Is(HttpParamEnum.INT) &&
-		   it.typename == "int") {
-	    *(cast(int*)it.data) = param.to!int;
-	} else if (param.Is(HttpParamEnum.FLOAT) &&
-		   it.typename == "float") {
-	    *(cast(float*)it.data) = param.to!float;
-	} else if (it.typename == "immutable(char)[]") {
-	    *(cast(string*)it.data) = null;
-	}
-
+    private void setValue (AttrInfo info, HttpParameter param) {
+	if (param.Is (HttpParamEnum.STRING) && info.type == "string") {
+	    *(cast(string*)info.value) = param.to!string;
+	} else if (param.Is (HttpParamEnum.INT) && info.type == "string") {
+	    *(cast(string*)info.value) = to!string (param.to!int);
+	} else if (param.Is (HttpParamEnum.FLOAT) && info.type == "string") {
+	    *(cast(string*)info.value) = to!string (param.to!float);
+	} else if (param.Is (HttpParamEnum.INT) && info.type == "int") {
+	    *(cast(int*)info.value) = param.to!int;
+	} else if (param.Is (HttpParamEnum.INT) && info.type == "float") {
+	    *(cast(float*)info.value) = param.to!int;
+	} else if (param.Is (HttpParamEnum.FLOAT) && info.type == "int") {
+	    *(cast(int*)info.value) = to!int(param.to!float);
+	} else if (param.Is (HttpParamEnum.FLOAT) && info.type == "float") {
+	    *(cast(float*)info.value) = param.to!float;
+	}	    	
     }
 
     abstract string execute ();
@@ -155,15 +144,18 @@ abstract class ControllerAncestor {
 	HttpRequest _request;
     }
 
+    mixin BindableDef;
+    
 }
 
-/**
- Cette classe est celle que l'utilisateur va herite afin de creer une instance de controller au demarrage de la runtime D.
-*/
-abstract class Controller (T) : ControllerAncestor {
-    mixin ControlInsert!T; /// ce mixin va instancier statiquement la classe controller
-}
 
+class Controller (T) : ControllerAncestor {
+    this (T elem) {
+	super (elem);
+    }
+
+    mixin ControlInsert!T;
+}
 
 
 

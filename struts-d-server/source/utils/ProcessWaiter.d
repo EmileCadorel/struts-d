@@ -8,6 +8,7 @@ class ProcessWaiter : Thread {
     this (string arch, Pid pid) {
 	super (&run);
 	this.pid = pid;
+	this.arch = arch;
     }
 
     void run () {

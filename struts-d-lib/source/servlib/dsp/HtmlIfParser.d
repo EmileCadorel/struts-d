@@ -25,11 +25,11 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
 	    this.right = right;
 	}
 
-	Constante getValue (ControlVars session){
+	Constante getValue (ControllerAncestor session){
 	    return left.opTest(op,right,session);
 	}
 
-	Constante opTest (Operator op, Expression right, ControlVars session) {
+	Constante opTest (Operator op, Expression right, ControllerAncestor session) {
 	    switch (op) {
 	    case Operator.PLUS:
 		return getValue(session).opPlus (right.getValue(session));
@@ -60,7 +60,7 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
 	    }
 	}    
     
-	bool isTrue (ControlVars session) {
+	bool isTrue (ControllerAncestor session) {
 	    try{		
 		Constante leftVal = left.getValue(session);
 		Constante rightVal = right.getValue(session);	        
@@ -153,7 +153,7 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
 	    return "Constante";
 	}
     
-	override Constante getValue(ControlVars session) {
+	override Constante getValue(ControllerAncestor session) {
 	    return this;
 	}
     }
@@ -236,24 +236,24 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
 	    return "Var";
 	}
 
-	override Constante getValue(ControlVars session) {
-	    foreach (elem ; session) {		    
-		if (elem.name == '.' ~ val) {
-		    switch (elem.typename) {
-		    case "int":
-			return new Int (*cast(int*) elem.data);
-		    case "bool":
-			return new Bool (*cast(bool*) elem.data);
-		    case "float":
-			return new Float (*cast(float*) elem.data);
-		    case "immutable(char)[]":
-			return new Constante (*cast(string*) elem.data);
-		    default:
-			throw new Exception ("Var Type not supported");
-		    }
-		}
+	override Constante getValue(ControllerAncestor session) {
+	    auto var = session.getValue (this.val);
+	    if (var.name != this.val)
+		throw new Exception ("Var not found '" ~ val ~ "'");
+	    else {
+		switch (var.type) {
+		case "int":
+		    return new Int (*cast(int*) var.value);
+		case "bool":
+		    return new Bool (*cast(bool*) var.value);
+		case "float":
+		    return new Float (*cast(float*) var.value);
+		case "string":
+		    return new Constante (*cast(string*) var.value);
+		default:
+		    throw new Exception ("Var Type not supported");
+		}		
 	    }
-	    throw new Exception ("Var not found '" ~ val ~ "'");
 	}
     }
 
@@ -377,7 +377,7 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
 	    PARC = ")"      
 	    }
   
-    override Balise[] execute (Balise element, Balise[] delegate (Balise, string, ControlVars) callBack, string app, ControlVars session) {
+    override Balise[] execute (Balise element, Balise[] delegate (Balise, string, ControllerAncestor) callBack, string app, ControllerAncestor session) {
 	Log.instance.addInfo("HtmlIf execute");
 	auto it = element["test"];
 	if (it !is null){

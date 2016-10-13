@@ -214,7 +214,7 @@ class XMLoader {
 		    else total ~= word.str;
 		}
 	    }
-	}
-
+	}	
     }
+    
 }
