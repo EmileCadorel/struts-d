@@ -35,7 +35,7 @@ class HttpServer (T : HttpSession) : HttpServerBase {
 	this.end = true;
 	this.socket.close ();
     }
-
+   
     private {
 
 	void init () {

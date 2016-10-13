@@ -1,5 +1,8 @@
 <struts>
+  
   <action name="home" class="main.Home">
+    <result value="INPUT">login.dsp</result>
     <result value="SUCCESS">home.dsp</result>
   </action>
+  
 </struts>

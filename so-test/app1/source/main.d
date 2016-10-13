@@ -3,68 +3,40 @@ import std.stdio;
 import std.conv;
 import struts.control;
 
-class Ball : Bindable {
-    Foo elem;
-
-    this () {
-	super (this);
-    }
-}
-
-class Foo : Bindable {
-
-    string name;
-
-    this () {
-	super (this);
-    }
-    
-    override string toString () {
-	return "C'est la folie";
-    }
-}
 
 class Home : Controller!Home {
 
-    string test;
-
-    int test2 = 8;
+    string name;
     
-    Ball foo;
+    string pass;
+    
+    string error = "";
+
+    string user;
+
+    Session session;
     
     this () {
 	super (this);
-	foo = new Ball ();
     }
 
     override string execute() {
-	foo.elem = new Foo ();
-	foo.elem.name = "Final Test";
-	if (test is null) return "INPUT";
-	else return "SUCCESS";
-    }
-}
-
-class Page : Controller!Page {
-
-    this () {
-	super (this);
-    }
-    
-    override string execute () {
-	return "";
-    }
-}
-
-
-class Search : Controller!Search {
-
-    this () {
-	super (this);
-    }
-    
-    override string execute () {
+	writeln (this.session);
+	if (this.session is null || this.session.get!(string*)("login") is null) {
+	    if (name is null || pass is null) {
+		error = "Impossible sans nom ou pass";
+		return "INPUT";
+	    } else {
+		session ["login"] = &name;
+		user = name;
+		return "SUCCESS";
+	    }
+	}
+	user = *(this.session.get!(string) ("login"));
 	return "SUCCESS";
     }
-}
 
+    override void setSession (Session session) {
+	this.session = session;
+    }
+}

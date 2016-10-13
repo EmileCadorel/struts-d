@@ -5,6 +5,7 @@ import std.stdio, std.path;
 import std.outbuffer, std.conv, std.typecons;
 import std.container;
 import servlib.control.Bindable;
+import servlib.control.Session;
 
 alias ControllerInfo = Tuple!(TypeInfo, "type", string, "name");
 
@@ -101,6 +102,8 @@ class ControllerAncestor {
 	    }
 	}
     }
+
+    void setSession (Session) {}
 
     private void setValue (AttrInfo info, HttpParameter param) {
 	if (param.Is (HttpParamEnum.STRING) && info.type == "string") {

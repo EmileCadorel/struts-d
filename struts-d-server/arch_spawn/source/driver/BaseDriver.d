@@ -15,6 +15,7 @@ import servlib.utils.xml;
 import servlib.utils.Option;
 import servlib.utils.SoLoader;
 import servlib.dsp.HTMLoader;
+import http.SessionCreator;
 
 /**
    Driver de base pour ce serveur web
@@ -117,8 +118,10 @@ class BaseDriver : HttpSession {
 	controller.unpackRequest (request);
 
 	this.handleSessid (request, response);
-
-
+	this.session = SessionCreator.instance.getSession (this.sessid);
+	
+	controller.setSession (session);
+	
 	string result;
 	if (response_code == HttpResponseCode.OK) {
 	    string res = controller.execute();
@@ -252,6 +255,7 @@ class BaseDriver : HttpSession {
 
     private {
 	ControllerContainer controllers;
+	Session session;
 	Option config;
 	string sessid;
 	string client_addr;
