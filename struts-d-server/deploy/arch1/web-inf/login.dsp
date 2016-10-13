@@ -1,9 +1,10 @@
 <html>
   <body>
     <H1> Home </H1>
-    <form action="/home" method="post">
-      <input type="text" name="test"/>
-      <input type="submit"/>
+    <form method="post">
+      <dsp:textfield name="test"/>
+      <dsp:password name="pass"/>
+      <dsp:submit value="valider"/>
     </form>
   </body>
 </html>

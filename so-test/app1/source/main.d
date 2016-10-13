@@ -3,6 +3,14 @@ import std.stdio;
 import std.conv;
 import struts.control;
 
+class Ball : Bindable {
+    Foo elem;
+
+    this () {
+	super (this);
+    }
+}
+
 class Foo : Bindable {
 
     string name;
@@ -14,7 +22,7 @@ class Foo : Bindable {
     override string toString () {
 	return "C'est la folie";
     }
-};
+}
 
 class Home : Controller!Home {
 
@@ -22,15 +30,16 @@ class Home : Controller!Home {
 
     int test2 = 8;
     
-    Foo foo;
+    Ball foo;
     
     this () {
 	super (this);
-	foo = new Foo ();
-	foo.name = "Test";
+	foo = new Ball ();
     }
 
     override string execute() {
+	foo.elem = new Foo ();
+	foo.elem.name = "Final Test";
 	if (test is null) return "INPUT";
 	else return "SUCCESS";
     }

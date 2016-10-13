@@ -14,7 +14,6 @@ import std.container, std.traits, std.array;
 
 class HtmlValueParser : HtmlInHerit ! ("dsp:value", HtmlValueParser) {
     override Balise [] execute (Balise element, Balise [] delegate (Balise, string, ControllerAncestor) callBack, string app, ControllerAncestor session) {
-	Log.instance.addInfo ("HtmlValueParser execution");
 	try {
 	    string value = element ["value"];
 	    if (value is null) {

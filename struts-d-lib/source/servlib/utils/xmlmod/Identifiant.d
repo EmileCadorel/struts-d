@@ -7,6 +7,11 @@ import std.conv;
  */
 class Identifiant {
 
+    this (string name) {
+	this._name = name;
+	this._locate = Location ("", 0, 0);
+    }
+    
     this (string name, Location locate) {
 	this._name = name;
 	this._locate = locate;

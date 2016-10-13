@@ -180,7 +180,7 @@ class BaseDriver : HttpSession {
 	    auto it = (res in controller_info.results);
 	    if (it is null) {
 		if (controller_info.def is null || strip(controller_info.def) == "") {
-		    //TODO throw
+		    throw new Exception ("Pas de traitement pour le cas " ~ res ~  " sur l'action: " ~ controller_info.name);
 		}
 		dsp_file = controller_info.def;
 	    } else {

@@ -24,13 +24,17 @@ class ProcessLauncher {
     }        
         
     void kill (string arch) {
-	auto it = (arch in process);
-	if (it !is null) {
-	    std.process.kill (*it);
-	    wait (*it);
-	    writefln("Kill arch:%s", arch);
+	try {
+	    auto it = (arch in process);
+	    if (it !is null) {
+		std.process.kill (*it);
+		wait (*it);
+		writefln("Kill arch:%s", arch);
+		process.remove (arch);
+	    }
+	} catch (Exception e) {
 	    process.remove (arch);
-	}	
+	}
     }
 
     void killAll () {
@@ -47,6 +51,10 @@ class ProcessLauncher {
 	}	
     }
     
+    void remove (string arch) {
+	this.process.remove (arch);
+    }
+
     mixin Singleton!ProcessLauncher;
 
     private immutable string proc = "./arch_spawn/arch_launcher";
