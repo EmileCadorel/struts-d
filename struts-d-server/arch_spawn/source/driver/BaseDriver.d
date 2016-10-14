@@ -73,33 +73,17 @@ class BaseDriver : HttpSession {
 	if (controller_name == "favicon.ico") {
 	    controller_name = "";
 	}
-
-	ControllerAncestor controller = null;
-	ControllerInfos controller_info;
-	string app;
-	HttpResponseCode code_reponse = HttpResponseCode.OK;
-
-	this.getController (controller_name, controller, controller_info, app);
-
-	if (controller is null) {
-	    auto controllerInfo = ControllerTable.instance[this.controllers["NotFound"].control];
-	    writeln (controllerInfo.name);
-	    controller = cast(ControllerAncestor) (Object.factory (controllerInfo.name));
-	    controller_info = this.controllers["NotFound"];
-	    code_reponse = HttpResponseCode.NOT_FOUND;
-	}
-
-	HttpResponse response = this.build_response (request, controller, controller_info, app, code_reponse);
-	this.send_response (response);
+	
+	this.send_response (redirect (request, controller_name));
     }
 
     /**
        Prend en paramètre le nom du controlleur demandé, et renseigne les autres paramètres si possible
     */
-    void getController (string controller_name, ref ControllerAncestor controller, ref ControllerInfos controller_info, ref string app) {
+    void getController (string action, ref ControllerAncestor controller, ref ControllerInfos controller_info, ref string app) {
 	controller = null;
 	foreach (key, value; ApplicationContainer.instance.all ()) {
-	    auto control = value[controller_name];
+	    auto control = value [action];
 	    if (!control.isNull) {
 		auto typeinfo = ControllerTable.instance [control.control];
 		controller = cast(ControllerAncestor) (Object.factory (typeinfo.name));
@@ -118,27 +102,30 @@ class BaseDriver : HttpSession {
 	controller.unpackRequest (request);
 
 	this.handleSessid (request, response);
-	this.session = SessionCreator.instance.getSession (this.sessid);
-	
+	this.session = SessionCreator.instance.getSession (this.sessid);	
 	controller.setSession (session);
 	
-	string result;
+	string content;
 	if (response_code == HttpResponseCode.OK) {
 	    string res = controller.execute();
-	    string dsp_file;
 	    auto it = (res in controller_info.results);
-	    if (it is null) {
-		if (controller_info.def is null || strip(controller_info.def) == "") {
-		    //TODO throw
-		}
-		dsp_file = controller_info.def;
-	    } else {
-		dsp_file = *it;
-	    }
-	}
-	
-	string content = this.getContent (controller, controller_info, app, response_code);
-	
+	    auto it2 = (res in controller_info.redirect);
+	    writeln (controller_info.results);
+	    
+	    if (it !is null) {
+		content = getContent (controller, controller_info, app, *it);
+	    } else if (it2 !is null) {
+		controller.packRequest (request);
+		return redirect (request, *it2);
+	    } else if (controller_info.def !is null) {
+		content = getContent (controller, controller_info, app, controller_info.def);
+	    } else if (controller_info.redirectDef !is null) {
+		controller.packRequest (request);
+		return redirect (request, controller_info.redirectDef);
+	    } else
+		throw new Exception ("Pas de traitement pour le resultat " ~ res ~ " dans l'action " ~ controller_info.name);
+	}    
+		
 	response.addContent (content);
 	response.code = response_code;
 	response.proto = "HTTP/1.1";
@@ -146,6 +133,26 @@ class BaseDriver : HttpSession {
 
 	return response;
     }
+
+    HttpResponse redirect (HttpRequest request, string action) {
+	ControllerAncestor controller = null;
+	ControllerInfos controller_info;
+	string app;
+	HttpResponseCode code_reponse = HttpResponseCode.OK;
+
+	this.getController (action, controller, controller_info, app);
+
+	if (controller is null) {
+	    auto controllerInfo = ControllerTable.instance[this.controllers["NotFound"].control];
+	    writeln (controllerInfo.name);
+	    controller = cast(ControllerAncestor) (Object.factory (controllerInfo.name));
+	    controller_info = this.controllers["NotFound"];
+	    code_reponse = HttpResponseCode.NOT_FOUND;
+	}
+
+	return this.build_response (request, controller, controller_info, app, code_reponse);	
+    }
+    
     /**
        On vérifie comment sont configurées les variables de session et on met à jour la reponse si nécessaire
      */
@@ -176,27 +183,11 @@ class BaseDriver : HttpSession {
        Va chercher le contenu à renvoyer au client en fonction du code de réponse et du controlleur
        Si le code de réponse est OK on va chercher la page dsp indiquée dans le controller_info
      */
-    string getContent (ControllerAncestor controller, ControllerInfos controller_info, string app, HttpResponseCode response_code) {
-	if (response_code == HttpResponseCode.OK) {
-	    string res = controller.execute();
-	    string dsp_file;
-	    auto it = (res in controller_info.results);
-	    if (it is null) {
-		if (controller_info.def is null || strip(controller_info.def) == "") {
-		    throw new Exception ("Pas de traitement pour le cas " ~ res ~  " sur l'action: " ~ controller_info.name);
-		}
-		dsp_file = controller_info.def;
-	    } else {
-		dsp_file = *it;
-	    }
-
-	    Balise html = HTMLoader.instance.load (dsp_file, app, controller);
-	    OutBuffer buf;
-	    html.toXml (buf);
-	    return buf.toString;
-	} else {
-	    return controller.execute ();
-	}
+    string getContent (ControllerAncestor controller, ControllerInfos controller_info, string app, string dsp_file) {
+	Balise html = HTMLoader.instance.load (dsp_file, app, controller);
+	OutBuffer buf;
+	html.toXml (buf);
+	return buf.toString;
     }
 
     /**
