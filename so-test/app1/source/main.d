@@ -15,6 +15,8 @@ class Home : Controller!Home {
     string user;
 
     Session session;
+
+    int[] myList = [0,3,4,8];
     
     this () {
 	super (this);
@@ -22,6 +24,7 @@ class Home : Controller!Home {
 
     override string execute() {
 	writeln (this.session);
+	/*
 	if (this.session is null || this.session.get!(string*)("login") is null) {
 	    if (name is null || pass is null) {
 		error = "Impossible sans nom ou pass";
@@ -32,7 +35,7 @@ class Home : Controller!Home {
 		return "SUCCESS";
 	    }
 	}
-	user = *(this.session.get!(string) ("login"));
+	user = *(this.session.get!(string) ("login"));*/
 	return "SUCCESS";
     }
 

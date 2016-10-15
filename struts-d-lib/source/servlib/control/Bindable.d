@@ -4,6 +4,7 @@ import std.container;
 import std.typecons, std.conv;
 import std.path, std.outbuffer;
 import std.array;
+import std.stdio;
 
 alias ObjAttrInfo = Tuple!(string, "name", Object*, "value");
 alias AttrInfo = Tuple!(string, "name", void*, "value", string, "type");
@@ -22,9 +23,14 @@ template BindableDef () {
     }
 
     void opIndexAssign (T) (T value, string name) {
-	foreach (it ; this._std) {
-	    if (it.name == name)
-		*(cast(T*)it.value) = value;
+	import std.experimental.allocator;
+	foreach (ref it ; this._std) {
+	    if (it.name == name){
+		if(it.value is null)
+		    it.value = [value].ptr;
+		else
+		    *(cast(T*)it.value) = value;
+	    }
 	}
     }
 
@@ -57,6 +63,16 @@ template BindableDef () {
 	    }
 	}
 	return AttrInfo ("", null, "");
+    }
+
+    void addAttr(AttrInfo attr){
+	import  std.algorithm, std.array;
+        auto elem = find!"a.name == b"(_std.array, attr.name);
+        writeln(elem);
+	if (elem == [])
+	    _std.insertBack(attr);
+	else
+	    throw new Exception("Controller Variable already defined: " ~ attr.name);
     }
     
     private {
