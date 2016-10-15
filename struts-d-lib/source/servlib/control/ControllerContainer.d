@@ -93,6 +93,12 @@ struct ControllerInfos {
     /// Le traitements a effectuer par default si results ne specifie rien
     string def;
 
+    /// Les informations de redirection a effectuer apres une execution du controller
+    string [string] redirect;
+
+    /// La redirection par defaut
+    string redirectDef;
+    
     /**
      Return:
      un controller identifier comme etant le controller vide

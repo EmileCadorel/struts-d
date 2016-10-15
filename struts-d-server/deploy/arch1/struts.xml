@@ -1,8 +1,14 @@
 <struts>
   
   <action name="home" class="main.Home">
-    <result value="INPUT">home.dsp</result>
-    <result value="SUCCESS">home.dsp</result>
+    <result value="INPUT">login.dsp</result>
+    <result value="SUCCESS">
+      <redirect action="logged"/>
+    </result>
+  </action>
+
+  <action name="logged" class="main.Logged">
+    <result>home.dsp</result>
   </action>
   
 </struts>
