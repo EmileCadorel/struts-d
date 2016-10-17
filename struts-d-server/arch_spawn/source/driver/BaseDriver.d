@@ -116,7 +116,8 @@ class BaseDriver : HttpSession {
 	this.handleSessid (request, response);
 	this.session = SessionCreator.instance.getSession (this.sessid);	
 	controller.setSession (session);
-	
+	response.code = response_code;
+
 	string content;
 	if (response_code == HttpResponseCode.OK) {
 	    string res = controller.execute();
@@ -127,19 +128,18 @@ class BaseDriver : HttpSession {
 	    if (it !is null) {
 		content = getContent (controller, controller_info, app, *it);
 	    } else if (it2 !is null) {
-		controller.packRequest (request);
-		return redirect (request, *it2);
+		response.location = "/" ~ *it2;
+		response.code = HttpResponseCode.REDIRECT;
 	    } else if (controller_info.def !is null) {
 		content = getContent (controller, controller_info, app, controller_info.def);
 	    } else if (controller_info.redirectDef !is null) {
-		controller.packRequest (request);
-		return redirect (request, controller_info.redirectDef);
+		response.location = "/" ~ controller_info.redirectDef;
+		response.code = HttpResponseCode.REDIRECT;
 	    } else
 		throw new Exception ("Pas de traitement pour le resultat " ~ res ~ " dans l'action " ~ controller_info.name);
 	}    
 		
 	response.addContent (content);
-	response.code = response_code;
 	response.proto = "HTTP/1.1";
 	response.type = "text/html";
 

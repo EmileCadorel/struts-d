@@ -1,15 +1,19 @@
 module servlib.http.responsemod.HttpResponse;
 import std.outbuffer;
 import std.datetime;
-import std.conv;
+import std.conv, std.typecons;
+
+
+alias HttpCode = Tuple!(ushort, "code", string, "text");
 
 /**
  Une reponse a une requete HTTP
 */
-enum HttpResponseCode : ushort {
-    OK = 200,
-	NOT_FOUND = 404,
-	INTERNAL_ERROR = 500
+enum HttpResponseCode : HttpCode {
+    OK = HttpCode (200, "OK"),
+	REDIRECT = HttpCode(301, "Moved Permanently"),
+	NOT_FOUND = HttpCode (404, "Not Found"),
+	INTERNAL_ERROR = HttpCode (500, "Internal Server Error")
 	}
 
 /**
@@ -57,6 +61,13 @@ class HttpResponse {
     }
 
     /**
+     l'url de redirection
+     */
+    ref string location () {
+	return this._location;
+    }
+    
+    /**
      ajoute le contenu dans la reponse
      */
     void addContent (string content) {
@@ -69,12 +80,15 @@ class HttpResponse {
     byte [] enpack () {
 	OutBuffer buf = new OutBuffer;
 	buf.write (_proto);
-	buf.write (" " ~ to!string(cast(ushort)_code) ~ " " ~ to!string(_code) ~ "\r\n");
+	buf.write (" " ~ to!string(_code.code) ~ " " ~ _code.text ~ "\r\n");
 	buf.write ("Date: " ~ to!string(_date.dayOfWeek));
 	buf.write (", " ~ to!string (_date.day) ~ " " ~ to!string(_date.month) ~ " ");
 	buf.write (to!string(_date.year) ~ " " ~ to!string(_date.hour) ~ ":" ~ to!string (_date.minute) ~ ":" ~ to!string(_date.second));
 	buf.write (" " ~ to!string(_date.timezone.stdName) ~ "\r\n");
 	buf.write ("Server: server-d\r\n");
+	if (_location !is null) {
+	    buf.write ("Location: " ~ _location ~ "\r\n");
+	}
 	buf.write ("Content-Type: " ~ _type ~ "; charset=UTF-8\r\n");
 	buf.write ("Content-Length: " ~ to!string(_content.length) ~ "\r\n\r\n");
 	byte [] total = cast(byte[])(buf.toString) ~ _content;
@@ -88,6 +102,7 @@ class HttpResponse {
 	byte [] _content;
 	string _type;
 	string[string] _cookies;
+	string _location = null;
     }
 
 }

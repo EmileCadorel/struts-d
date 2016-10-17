@@ -120,6 +120,7 @@ class ControllerAncestor {
 	if (request.post_value is null) {
 	    request.post_value = new HttpPost ();
 	}
+	
 	auto post = request.post_value;
 	foreach (it ; this.all ()) {
 	    if (it.type == "int" || it.type == "float" || it.type == "string")
