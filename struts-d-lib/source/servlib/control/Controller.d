@@ -100,7 +100,7 @@ class ControllerAncestor {
 	    }
 	}
 
-	if (request.post_value !is null) {
+	if (request.post_value !is null) {	    
 	    foreach (key, value ; request.post_value.params) {
 		auto all = split (key, ".");
 		auto it = this.getValue (all [0]);
@@ -117,8 +117,10 @@ class ControllerAncestor {
      Repaquet la request et rempli les element get de la requete avec les paramatre du controller
      */
     void packRequest (ref HttpRequest request) {
-	auto post = request.post_value ();
-	post.params.clear ();
+	if (request.post_value is null) {
+	    request.post_value = new HttpPost ();
+	}
+	auto post = request.post_value;
 	foreach (it ; this.all ()) {
 	    if (it.type == "int" || it.type == "float" || it.type == "string")
 		post.params[it.name] = getValueCont (it);

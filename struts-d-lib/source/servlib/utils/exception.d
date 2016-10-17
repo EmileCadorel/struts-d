@@ -19,8 +19,4 @@ class StrutsException : Exception {
       Log.instance.addError (msg);
 	super (msg);
     }
-
-  override string toString() {
-    return super.msg;
-  }
 }

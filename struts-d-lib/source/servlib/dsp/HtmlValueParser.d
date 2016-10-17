@@ -47,7 +47,9 @@ class HtmlValueParser : HtmlInHerit ! ("dsp:value", HtmlValueParser) {
 	case "float":
 	    return to!string (*cast(float*) var.value); 
 	case "string":
-	    return (*cast(string*) var.value); 
+	    return (*cast(string*) var.value);
+	case "immutable(char)[]":
+	    return (*cast(string*) var.value);
 	default:
 	    throw new Exception ("Var Type not supported");
 	}

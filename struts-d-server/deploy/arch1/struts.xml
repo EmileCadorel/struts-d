@@ -1,5 +1,11 @@
 <struts>
   
+  <default-action class="main.Index">
+    <result value="SUCCESS">
+      <redirect action="home"/>
+    </result>
+  </default-action>
+
   <action name="home" class="main.Home">
     <result value="INPUT">login.dsp</result>
     <result value="SUCCESS">

@@ -73,7 +73,7 @@ class BaseDriver : HttpSession {
 	if (controller_name == "favicon.ico") {
 	    controller_name = "";
 	}
-	
+
 	this.send_response (redirect (request, controller_name));
     }
 
@@ -82,16 +82,28 @@ class BaseDriver : HttpSession {
     */
     void getController (string action, ref ControllerAncestor controller, ref ControllerInfos controller_info, ref string app) {
 	controller = null;
-	foreach (key, value; ApplicationContainer.instance.all ()) {
-	    auto control = value [action];
-	    if (!control.isNull) {
-		auto typeinfo = ControllerTable.instance [control.control];
-		controller = cast(ControllerAncestor) (Object.factory (typeinfo.name));
-		controller_info = control;
-		app = key;
-		break;
-	    }
+	if (action == "") {
+	    foreach (key, value; ApplicationContainer.instance.all ()) {
+		if (!value.def.isNull) {
+		    auto typeinfo = ControllerTable.instance [value.def.control];
+		    controller = cast(ControllerAncestor) (Object.factory (typeinfo.name));
+		    controller_info = value.def;
+		    app = key;
+		    return;
+		}
+	    }	    
 	}
+	else 
+	    foreach (key, value; ApplicationContainer.instance.all ()) {
+		auto control = value [action];
+		if (!control.isNull) {
+		    auto typeinfo = ControllerTable.instance [control.control];
+		    controller = cast(ControllerAncestor) (Object.factory (typeinfo.name));
+		    controller_info = control;
+		    app = key;
+		    break;
+		} 
+	    }	
     }
 
     /**

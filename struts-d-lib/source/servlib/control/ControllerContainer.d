@@ -57,6 +57,14 @@ class ControllerContainer {
     }
 
     /**
+     Return:
+     l'application par default si on a pas d'element dans l'url
+     */
+    ref ControllerInfos def () {
+	return this._default;
+    }
+    
+    /**
      Definis un controller pour un chemin d'acces
      Params:
      value, le controller
@@ -72,6 +80,7 @@ class ControllerContainer {
     ref ControllerInfos [string] controllers () { return this._controllers; }
 
     private  {
+	ControllerInfos _default = ControllerInfos.empty;
 	ControllerInfos [string] _controllers;
     }
 
@@ -112,7 +121,7 @@ struct ControllerInfos {
      vrai si this == empty
      */
     bool isNull () {
-	return this.name == null;
+	return this.control == null;
     }
 
 }

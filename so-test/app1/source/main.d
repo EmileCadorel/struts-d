@@ -12,9 +12,17 @@ class User : Bindable {
     this () {
 	super (this);
     }
+      
+}
 
+class Index : Controller!Index {
+    this () {
+	super (this);
+    }
     
-    
+    override string execute () {
+	return "SUCCESS";
+    }
 }
 
 
@@ -37,16 +45,29 @@ class Home : Controller!Home {
 
 }
 
+class Test : Bindable {
+    string name;
+    string value;
+
+    this (string name, string value) {
+	super (this);
+	this.name = name;
+	this.value = value;
+    }
+    
+}
+
 
 class Logged : Controller!Logged {
 
     User user;
     
-    int[] myList = [0,3,4,8];
+    int [] myList;
     
     this () {
 	super (this);
 	user = new User ();
+	myList = [1, 3, 4, 90];
     }
     
     override string execute () {

@@ -4,8 +4,14 @@
 <body>
 <H1> Home </H1>
 Bienvenue: <dsp:value value="user.name"/> <br/>
-<dsp:forEach item="itm" list="myList">
-<dsp:value value="itm"/>
-</dsp:forEach>
+<table>
+  <dsp:forEach item="itm" list="myList">
+    <td>
+      <li>
+	<dsp:value value="itm"/>
+      </li>
+    </td>
+  </dsp:forEach>
+</table>
 </body>
 </html>

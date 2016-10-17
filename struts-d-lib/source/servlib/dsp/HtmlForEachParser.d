@@ -58,7 +58,7 @@ class HtmlForEachParser : HtmlInHerit ! ("dsp:forEach", HtmlForEachParser) {
 	    return iterateList !(int) (*cast(int[]*)list.value, itemName, element, callBack, app, session);
 	case "float[]":	        
 	    return iterateList !(float) (*cast(float[]*)list.value, itemName, element, callBack, app, session);
-	case "string[]":	        
+	case "immutable(char)[][]":	        
 	    return iterateList !(string) (*cast(string[]*)list.value, itemName, element, callBack, app, session);
 	    /*	    case "Array"
 		    return iterateList (Array) (*cast(Array*)list.value, element, callBack, app, session);*/

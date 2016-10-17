@@ -23,11 +23,14 @@ class StrutsLoader {
 	    throw new StrutsError (root);
 	ApplicationContainer.instance.addApp (app);
 	auto current = ApplicationContainer.instance.getApp (app);
+	current.def = ControllerInfos.empty;
 	foreach (it; root.childs) {	    
 	    if (it.name.name == "package")
 		loadPackage (current, it);
 	    else if (it.name.name == "action")
 		loadAction (current, it);
+	    else if (it.name.name == "default-action")
+		loadDefaultAction (current, it);
 	    else throw new StrutsError (it);
 	}
     }    
@@ -41,17 +44,42 @@ class StrutsLoader {
 		loadAction (current, it, root);
 	    else if (it.name.name == "package")
 		loadPackage (current, it, root);
+	    else if (it.name.name == "default-action")
+		loadDefaultAction (current, it, root);
 	    else throw new StrutsError (it);
 	}
     }
 
+    private static void loadDefaultAction (ControllerContainer current, Balise act, string root="") {
+	ControllerInfos info;
+	info.def = null;
+	info.control = act["class"];	
+	if (info.control is null) throw new StrutsError (act);
+	info.control = root ~ info.control;
+	foreach (it ; act.childs) {
+	    if (it.name.name != "result")
+		throw new StrutsError (it);
+	    else {
+		if (it.childs.length == 1 && cast(Text)(it.childs[0]) !is null) {
+		    loadResultName (it, info);
+		} else if (it.childs.length == 1) {
+		    loadRedirectName (it, info);
+		} else
+		      throw new StrutsError (it);
+	    }
+	}
+	current.def = info;
+    }
+    
+    
     private static void loadAction (ControllerContainer current, Balise act, string root="") {
 	ControllerInfos info;
 	info.def = null;
 	info.name = act["name"];
-	info.control = act["class"];
+	info.control = act["class"];	
 	if (info.name is null) throw new StrutsError (act);
 	else if (info.control is null) throw new StrutsError (act);
+	info.control = root ~ info.control;
 	foreach (it ; act.childs) {
 	    if (it.name.name != "result")
 		throw new StrutsError (it);
