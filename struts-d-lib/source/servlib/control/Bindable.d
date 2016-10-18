@@ -23,7 +23,6 @@ template BindableDef () {
     }
 
     void opIndexAssign (T) (T value, string name) {
-	import std.experimental.allocator;
 	foreach (ref it ; this._std) {
 	    if (it.name == name){
 		if(it.value is null)

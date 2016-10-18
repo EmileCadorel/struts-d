@@ -15,7 +15,7 @@ import std.container, std.traits, std.array;
 
 class HtmlPassParser : HtmlInHerit ! ("dsp:password", HtmlPassParser) {
     
-    override Balise [] execute (Balise element, Balise [] delegate (Balise, string, ControllerAncestor) callBack, string app, ControllerAncestor session) {
+    override Balise [] execute (Balise element, Balise [] delegate (Balise, string, ControllerAncestor) callBack, string app, ref ControllerAncestor session) {
 	try {
 	    Balise retour = new Balise (new Identifiant ("input"));
 	    retour.attrs [new Identifiant ("type")] = "password";

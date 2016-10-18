@@ -16,6 +16,7 @@ import servlib.utils.Option;
 import servlib.utils.SoLoader;
 import servlib.dsp.HTMLoader;
 import http.SessionCreator;
+import core.exception;
 
 /**
    Driver de base pour ce serveur web
@@ -38,6 +39,8 @@ class BaseDriver : HttpSession {
 	    Log.instance.addInfo ("Connexion de ", this.client_addr);
 	    this.start_routine ();
 	} catch (Exception e) {
+	    writeln (e.toString());
+	} catch (AssertError e){
 	    writeln (e.toString());
 	}
     }
@@ -120,7 +123,7 @@ class BaseDriver : HttpSession {
 
 	string content;
 	if (response_code == HttpResponseCode.OK) {
-	    string res = controller.execute();
+	    string res = controller.execute ();
 	    auto it = (res in controller_info.results);
 	    auto it2 = (res in controller_info.redirect);
 	    writeln (controller_info.results);

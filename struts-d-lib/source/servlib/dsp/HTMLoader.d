@@ -46,8 +46,9 @@ class HTMLoader {
 		foreach (itch ; childs)
 		    final_childs.insertBack (itch);
 	    }
-	    balise.childs = final_childs;
-	    return [balise];
+	    Balise bal = balise.clone();
+	    bal.childs = final_childs;
+	    return [bal];
 	}
     }
 

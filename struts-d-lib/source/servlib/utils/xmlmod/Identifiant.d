@@ -34,6 +34,17 @@ class Identifiant {
     ref Location locate () {
 	return this._locate;
     }
+
+    Identifiant clone () {
+	if (this._space !is null)
+	    return new Identifiant (this._name,
+				    this._space.clone (),
+				    this._locate);
+	else
+	    return new Identifiant (this._name,
+				     null,
+				     this._locate);
+    }
     
     static Identifiant eof () {
 	return new Identifiant ("", Location("", -1, -1));

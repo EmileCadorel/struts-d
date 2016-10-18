@@ -14,7 +14,7 @@ import std.container, std.traits, std.array;
 
 class HtmlForEachParser : HtmlInHerit ! ("dsp:forEach", HtmlForEachParser) {
   
-    override Balise[] execute (Balise element, Balise[] delegate (Balise, string, ControllerAncestor) callBack, string app, ControllerAncestor session) {
+    override Balise[] execute (Balise element, Balise[] delegate (Balise, string, ControllerAncestor) callBack, string app, ref ControllerAncestor session) {
 	Log.instance.addInfo("HtmlForEach execute");
 	try{
 	    string list = element["list"];
@@ -44,7 +44,7 @@ class HtmlForEachParser : HtmlInHerit ! ("dsp:forEach", HtmlForEachParser) {
 	}
     }
 
-    private Balise[] iterateList(AttrInfo list, string itemName, Balise element, Balise[] delegate (Balise, string, ControllerAncestor) callBack, string app, ControllerAncestor session){	
+    private Balise[] iterateList(AttrInfo list, string itemName, Balise element, Balise[] delegate (Balise, string, ControllerAncestor) callBack, string app, ref ControllerAncestor session){	
 	Log.instance.addInfo("HtmlForEach execute Name " ~ list.type);
 	string name;
 	if(canFind(list.type,".")){
@@ -74,15 +74,15 @@ class HtmlForEachParser : HtmlInHerit ! ("dsp:forEach", HtmlForEachParser) {
     
 	     }*/
 
-    private Balise[] iterateList (T) (T[] list, string itemName, Balise element, Balise[] delegate (Balise, string, ControllerAncestor) callBack, string app, ControllerAncestor session){
+    private Balise[] iterateList (T) (T[] list, string itemName, Balise element, Balise[] delegate (Balise, string, ControllerAncestor) callBack, string app, ref ControllerAncestor session){
 	Balise[] balises;
 	session.addAttr(AttrInfo(itemName, null, to!string(typeid (T))));
-	foreach (elem ; list) {
+	foreach (ref elem ; list) {
 	    session.opIndexAssign !(T)(elem,itemName);
-	    foreach(balise; element.childs){
+	    foreach(balise; element.childs){		
 		balises ~= callBack(balise, app, session);
 	    }
-	}
+	}	
 	return balises;
     }
     

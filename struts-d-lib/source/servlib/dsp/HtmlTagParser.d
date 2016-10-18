@@ -8,7 +8,7 @@ import servlib.control.Controller;
 import std.stdio;
 
 class HtmlTagParser {
-    abstract Balise[] execute (Balise, Balise[] delegate (Balise, string, ControllerAncestor), string, ControllerAncestor);
+    abstract Balise[] execute (Balise, Balise[] delegate (Balise, string, ControllerAncestor), string, ref ControllerAncestor);
 }
 
 template HtmlTPInsert (string id, T : HtmlTagParser) {

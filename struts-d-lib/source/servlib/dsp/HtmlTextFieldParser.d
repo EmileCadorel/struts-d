@@ -16,7 +16,7 @@ import std.container, std.traits, std.array;
 
 class HtmlTextFieldParser : HtmlInHerit ! ("dsp:textfield", HtmlTextFieldParser) {
     
-    override Balise [] execute (Balise element, Balise [] delegate (Balise, string, ControllerAncestor) callBack, string app, ControllerAncestor session) {
+    override Balise [] execute (Balise element, Balise [] delegate (Balise, string, ControllerAncestor) callBack, string app, ref ControllerAncestor session) {
 	try {
 	    Balise retour = new Balise (new Identifiant ("input"));
 	    retour.attrs[new Identifiant ("type")] = "text";

@@ -13,14 +13,15 @@ import std.conv, std.stdio;
 import std.container, std.traits, std.array;
 
 class HtmlValueParser : HtmlInHerit ! ("dsp:value", HtmlValueParser) {
-    override Balise [] execute (Balise element, Balise [] delegate (Balise, string, ControllerAncestor) callBack, string app, ControllerAncestor session) {
+    override Balise [] execute (Balise element, Balise [] delegate (Balise, string, ControllerAncestor) callBack, string app, ref ControllerAncestor session) {
 	try {
 	    string value = element ["value"];
 	    if (value is null) {
 		throw new Exception ("Pas d'element value dans la balise ");
 	    }
+	    
 	    auto alls = split (value, ".");
-	    auto var = session.getValue (alls[0]);
+	    auto var = session.getValue (alls[0]);	    
 	    auto varObj = session.getValue !(Object) (alls[0]);
 	    if (var.name != value && varObj is null) {
 		throw new Exception ("Var not found '" ~ alls[0] ~ "'");

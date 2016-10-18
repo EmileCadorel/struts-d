@@ -377,7 +377,7 @@ class HtmlIfParser : HtmlInHerit ! ("dsp:if", HtmlIfParser) {
 	    PARC = ")"      
 	    }
   
-    override Balise[] execute (Balise element, Balise[] delegate (Balise, string, ControllerAncestor) callBack, string app, ControllerAncestor session) {
+    override Balise[] execute (Balise element, Balise[] delegate (Balise, string, ControllerAncestor) callBack, string app, ref ControllerAncestor session) {
 	Log.instance.addInfo("HtmlIf execute");
 	auto it = element["test"];
 	if (it !is null){

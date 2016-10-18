@@ -31,6 +31,10 @@ class Balise {
 	    if (key.name == name) return value;
 	return null;
     }
+
+    Balise clone(){
+	return new Balise(this.name.clone,this.attrs.dup,this.childs.dup);
+    }
         
     string toStr (int nb = 0) {
 	OutBuffer buf = new OutBuffer();
@@ -49,6 +53,10 @@ class Balise {
 	    buf.write ("\n");
 	}
 	return buf.toString ();
+    }
+
+    override string toString(){
+	return toStr();
     }
 
     void toXml (ref OutBuffer buf, int nb = 0) {
@@ -99,7 +107,8 @@ class Balise {
 class ProcInst : Balise {
     this (Identifiant name, string[Identifiant] attrs) {
 	super (name, attrs);
-    }
+	assert(false, "TODO a implementer");
+    }    
 }
 
 class Text : Balise {
@@ -125,6 +134,10 @@ class Text : Balise {
 	buf.write (rightJustify ("", nb, ' '));	
 	buf.write (this.content);
 	buf.write ("\n");
+    }
+
+    override Balise clone(){
+	return new Text(this.content);
     }
 
     string content;
