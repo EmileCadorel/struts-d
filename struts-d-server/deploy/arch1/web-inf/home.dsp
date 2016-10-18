@@ -8,7 +8,7 @@ Bienvenue: <dsp:value value="user.name"/> <br/>
   <dsp:forEach item="itm" list="myList">
     <td>
       <li>
-	<dsp:value value="itm"/>
+	<dsp:value value="itm.name"/>
       </li>
     </td>
   </dsp:forEach>

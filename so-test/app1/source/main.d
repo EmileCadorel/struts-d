@@ -12,6 +12,11 @@ class User : Bindable {
     this () {
 	super (this);
     }
+
+    this(string name){
+	super (this);
+	this.name = name;
+    }
       
 }
 
@@ -62,12 +67,12 @@ class Logged : Controller!Logged {
 
     User user;
     
-    int [] myList;
+    User [] myList;
     
     this () {
 	super (this);
 	user = new User ();
-	myList = [1, 3, 4, 90];
+	myList = [new User("bli"),new User("bla"), new User("blo")];
     }
     
     override string execute () {

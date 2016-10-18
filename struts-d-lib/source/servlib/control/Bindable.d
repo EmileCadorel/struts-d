@@ -16,9 +16,13 @@ template BindableDef () {
     }
 
     void opIndexAssign (T : Object) (T value, string name) {
-	foreach (it ; this._attrs) {
-	    if (it.name == name)
-		*it.value = value;
+	foreach (ref it ; this._attrs) {
+	    if (it.name == name){
+		if(it.value is null)
+		    it.value = [value].ptr;
+		else
+		    *it.value = value;
+	    }
 	}
     }
 
@@ -64,14 +68,29 @@ template BindableDef () {
 	return AttrInfo ("", null, "");
     }
 
-    void addAttr(AttrInfo attr){
+    void addValue (T)(T * value, string name){
 	import  std.algorithm, std.array;
-        auto elem = find!"a.name == b"(_std.array, attr.name);
-        writeln(elem);
-	if (elem == [])
-	    _std.insertBack(attr);
+        auto elem = find!"a.name == b"(_std.array, name);
+	if (elem == []){
+	    if(value is null)
+		_std.insertBack(AttrInfo(name, null, to!string(typeid (T))));
+	    else
+		_std.insertBack(AttrInfo(name, value, to!string(typeid (T))));
+	}
 	else
-	    throw new Exception("Controller Variable already defined: " ~ attr.name);
+	    throw new Exception("Controller Variable already defined: " ~ name);
+    }
+
+    void addValue (T : Object)(T * value,string name){
+	import  std.algorithm, std.array;
+        auto elem = find!"a.name == b"(_attrs.array, name);
+	if (elem == [])
+	    if(value is null)
+		_attrs.insertBack(ObjAttrInfo(name, null));
+	    else
+		_attrs.insertBack(ObjAttrInfo(name, value));
+	else
+	    throw new Exception("Controller Variable already defined: " ~ name);
     }
     
     private {

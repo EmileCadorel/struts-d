@@ -48,11 +48,10 @@ class HtmlForEachParser : HtmlInHerit ! ("dsp:forEach", HtmlForEachParser) {
 	Log.instance.addInfo("HtmlForEach execute Name " ~ list.type);
 	string name;
 	if(canFind(list.type,".")){
-	    name = split(list.type,".")[$];
-	}
-	else{
+	    name = split(list.type,".")[$ - 1 .. $][0];
+	} else {
 	    name = list.type;
-	}
+	}       
 	switch(name){
 	case "int[]":	        
 	    return iterateList !(int) (*cast(int[]*)list.value, itemName, element, callBack, app, session);
@@ -63,20 +62,17 @@ class HtmlForEachParser : HtmlInHerit ! ("dsp:forEach", HtmlForEachParser) {
 	    /*	    case "Array"
 		    return iterateList (Array) (*cast(Array*)list.value, element, callBack, app, session);*/
 	default:
-	    throw new Exception("Type Not supported " ~ list.type);
+	    auto objLst = *cast(Bindable[]*)list.value;
+	    if(objLst !is null){
+		return iterateList !(Object) (cast(Object[])objLst,itemName, element, callBack, app, session);
+	    }else
+		throw new Exception("Type Not supported " ~ list.type);
 	}
     }
 
-    
-
-    /*	     
-	     private Balise[] iterateList(Object list, Balise element, Balise[] delegate (Balise, string, ControllerAncestor) callBack, string app, ControllerAncestor session){
-    
-	     }*/
-
     private Balise[] iterateList (T) (T[] list, string itemName, Balise element, Balise[] delegate (Balise, string, ControllerAncestor) callBack, string app, ref ControllerAncestor session){
 	Balise[] balises;
-	session.addAttr(AttrInfo(itemName, null, to!string(typeid (T))));
+	session.addValue !(T) (null, itemName);
 	foreach (ref elem ; list) {
 	    session.opIndexAssign !(T)(elem,itemName);
 	    foreach(balise; element.childs){		
